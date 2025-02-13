@@ -4,9 +4,11 @@
 \alias{create_mm_masterfile}
 \title{Create the MM data frame}
 \usage{
-create_mm_masterfile(min_age, mm_source, mm_codes_file, random_seed = 24)
+create_mm_masterfile(df, min_age, mm_source, mm_codes_file, random_seed = 24)
 }
 \arguments{
+\item{df}{The input data frame.}
+
 \item{min_age}{The minimum allowed age of participants.}
 
 \item{mm_source}{The source of disease history.}
@@ -16,6 +18,7 @@ create_mm_masterfile(min_age, mm_source, mm_codes_file, random_seed = 24)
 \item{random_seed}{The number of \code{set.seed}.}
 }
 \description{
-\code{create_mm_masterfile} returns a data frame with participants as rows
-and binary indicators for each disorder as columns.
+\code{create_mm_masterfile} takes the data frame with all the UKB data and
+returns a data frame with participants as rows and binary indicators for
+each disorder as columns.
 }
