@@ -6,6 +6,7 @@
 #' @param mm_source The source of disease history.
 #' @param mm_codes_file The path to the codes for each MM.
 #' @param random_seed The number of `set.seed`.
+#' @export
 
 create_mm_masterfile <- function(min_age,
                               mm_source,

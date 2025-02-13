@@ -9,6 +9,7 @@
 #' and a short name for the disorder, respectively.
 #' @param cancer TRUE or FALSE; indicates whether field ID 20001 or 20002 is 
 #' used.
+#' @export
 
 create_diseases_self <- function(df, 
                                  mm_codes,

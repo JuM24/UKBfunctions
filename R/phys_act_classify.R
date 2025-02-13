@@ -10,6 +10,7 @@
 #' 0 - (none, low [light household tasks only]
 #' 1 - medium [heavy household tasks and/or walking for pleasure and/or other exercise], 
 #' 2 - high [strenuous sports]).
+#' @export
 
 phys_act_classify <- function(x){
   if (any(x == 3 & !is.na(x), na.rm = TRUE)){

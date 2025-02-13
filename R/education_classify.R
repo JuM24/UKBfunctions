@@ -5,6 +5,7 @@
 #' The higher activity level is prioritised in cases of answers fitting into 
 #' multiple categories per participant.
 #' @param x The input array.
+#' @export
 
 education_classify <- function(x){
   if (any((x == 1 | x == 6) & !is.na(x), na.rm = TRUE)){
