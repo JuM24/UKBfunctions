@@ -45,8 +45,7 @@ get_aux_vars <- function(df){
            pol_pm10_2010 = X24005.0.0, pol_pm25_2010 = X24006.0.0,
            pol_pm25_10_2010 = X24008.0.0, deprivation = X189.0.0, ,
            alcohol_0 = X1558.0.0, household_0 = X709.0.0,
-           visits_0 = X1031.0.0, leisure_0 = X6160.0.0) %>%
-    filter(id %in% train_ids) # subset training set
+           visits_0 = X1031.0.0, leisure_0 = X6160.0.0)
 
   # -1 is NA
   aux_vars[, c('VNR_0', 'NM_0')] <-
