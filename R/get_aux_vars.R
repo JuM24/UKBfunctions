@@ -28,7 +28,7 @@ get_aux_vars <- function(df){
                      'X5208.0.0', 'X3731.0.0', 'X22040.0.0')
 
   aux_vars <- main_vars %>%
-    select(id, ass_age, starts_with(aux_vars_list)) %>%
+    select(id, starts_with(aux_vars_list)) %>%
     rename(sex = X31.0.0, height_0 = X50.0.0, weight_0 = X21002.0.0,
            waist_circ_0 = X48.0.0, lonely_0 = X2020.0.0,
            hip_circ_0 = X49.0.0, fat_mass = X23100.0.0, hdl = X30760.0.0,
