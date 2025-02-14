@@ -83,14 +83,13 @@ create_mm_masterfile <- function(df,
 
     # select only those disorders reported during UKB baseline
     dis_other <- main_vars %>%
-      select(id, ass_age,
-             starts_with(c('X2443.0', 'X2956.0', 'X6150.0', 'X2247.0', 'X2257.0',
-                           'X3404.0', 'X3414.0', 'X3571.0', 'X3741.0',
-                           'X3773.0', 'X6152.0', 'X3799.0',
-                           'X4067.0', 'X4792.0', 'X6148.0', 'X5441.0',
-                           'X5912.0', 'X5934.0', 'X6119.0', 'X6159.0', 'X6148.0',
-                           'X3393.0', 'X20404.', 'X20406.', 'X20456.', 'X20503.',
-                           'X20400.', 'X20401.')))
+      select(id, starts_with(c('X2443.0', 'X2956.0', 'X6150.0', 'X2247.0', 'X2257.0',
+                               'X3404.0', 'X3414.0', 'X3571.0', 'X3741.0',
+                               'X3773.0', 'X6152.0', 'X3799.0',
+                               'X4067.0', 'X4792.0', 'X6148.0', 'X5441.0',
+                               'X5912.0', 'X5934.0', 'X6119.0', 'X6159.0', 'X6148.0',
+                               'X3393.0', 'X20404.', 'X20406.', 'X20456.', 'X20503.',
+                               'X20400.', 'X20401.')))
     ## diabetes
     dis_other$diab_add_1 <- NA
     dis_other$diab_add_1[dis_other$X2443.0.0 == 1] <- 1
@@ -206,6 +205,10 @@ create_mm_masterfile <- function(df,
 
     dis_self <- dis_self %>%
       mutate(across(all_of(nas_to_zero), ~ replace_na(., '0')))
+
+    dis_self <- merge(subset(main_vars, select = c(id, age)),
+                      dis_self,
+                      by = 'id', all.y = TRUE)
 
     return(dis_self)
   }
