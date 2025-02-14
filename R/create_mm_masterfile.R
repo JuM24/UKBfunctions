@@ -4,14 +4,12 @@
 #' returns a data frame with participants as rows and binary indicators for
 #' each disorder as columns.
 #' @param df The input data frame.
-#' @param min_age The minimum allowed age of participants.
 #' @param mm_source The source of disease history.
 #' @param mm_codes_file The path to the codes for each MM.
 #' @param random_seed The number of `set.seed`.
 #' @export
 
 create_mm_masterfile <- function(df,
-                                 min_age,
                                  mm_source,
                                  mm_codes_file,
                                  random_seed = 24){
@@ -40,8 +38,6 @@ create_mm_masterfile <- function(df,
                                   format = '%d/%m/%Y')
   main_vars$ass_age <- as.numeric(difftime(main_vars$X53.0.0, main_vars$birth_date,
                                            units = 'days'))/365.25
-  # restrict to those older or as old as `min_age`
-  main_vars <- main_vars[main_vars$ass_age >= min_age, ]
 
 
 
