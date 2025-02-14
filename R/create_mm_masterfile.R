@@ -15,28 +15,28 @@ create_mm_masterfile <- function(df,
                                  random_seed = 24){
 
   ## remove participants that were younger than XX at assessment
-  main_vars$birth_date <- as.Date(paste0('01/',
-                                         as.character(main_vars$X52.0.0),
+  df$birth_date <- as.Date(paste0('01/',
+                                         as.character(df$X52.0.0),
                                          '/' ,
-                                         as.character(main_vars$X34.0.0)),
+                                         as.character(df$X34.0.0)),
                                   format = '%d/%m/%Y')
 
   # calculate number of days in each birth month
-  main_vars$days_in_birth_month <-
-    as.integer(format(main_vars$birth_date + months(1) - days(1), '%d'))
+  df$days_in_birth_month <-
+    as.integer(format(df$birth_date + months(1) - days(1), '%d'))
 
   # set random day for day of birth
   set.seed(random_seed)
-  main_vars$random_day <- apply(main_vars, 1, function(row) {
+  df$random_day <- apply(df, 1, function(row) {
     sample(1:row['days_in_birth_month'], 1)
   })
-  main_vars$birth_date <- as.Date(paste0(as.character(main_vars$random_day),
+  df$birth_date <- as.Date(paste0(as.character(df$random_day),
                                          '/',
-                                         as.character(main_vars$X52.0.0),
+                                         as.character(df$X52.0.0),
                                          '/' ,
-                                         as.character(main_vars$X34.0.0)),
+                                         as.character(df$X34.0.0)),
                                   format = '%d/%m/%Y')
-  main_vars$ass_age <- as.numeric(difftime(main_vars$X53.0.0, main_vars$birth_date,
+  df$ass_age <- as.numeric(difftime(df$X53.0.0, df$birth_date,
                                            units = 'days'))/365.25
 
 
@@ -55,11 +55,11 @@ create_mm_masterfile <- function(df,
       filter(!is.na(code)) %>%
       mutate(code = as.character(code))
     # non-cancer self-report disorders from category 20002
-    dis_self <- create_diseases_self(df = main_vars,
+    dis_self <- create_diseases_self(df = df,
                                      mm_codes = mm_codes,
                                      cancer = FALSE)
     # cancer self-report cases from category 20001
-    dis_self_cancer <- create_diseases_self(df = main_vars,
+    dis_self_cancer <- create_diseases_self(df = df,
                                             mm_codes = mm_codes,
                                             cancer = TRUE)
     # merge cancer and other disorders
@@ -78,7 +78,7 @@ create_mm_masterfile <- function(df,
 
 
     # select only those disorders reported during UKB baseline
-    dis_other <- main_vars %>%
+    dis_other <- df %>%
       select(id, starts_with(c('X2443.0', 'X2956.0', 'X6150.0', 'X2247.0', 'X2257.0',
                                'X3404.0', 'X3414.0', 'X3571.0', 'X3741.0',
                                'X3773.0', 'X6152.0', 'X3799.0',
@@ -202,7 +202,7 @@ create_mm_masterfile <- function(df,
     dis_self <- dis_self %>%
       mutate(across(all_of(nas_to_zero), ~ replace_na(., '0')))
 
-    dis_self <- merge(subset(main_vars, select = c(id, ass_age)),
+    dis_self <- merge(subset(df, select = c(id, ass_age)),
                       dis_self,
                       by = 'id', all.y = TRUE)
 
