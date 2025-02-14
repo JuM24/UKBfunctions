@@ -27,7 +27,7 @@ get_aux_vars <- function(df){
                      'X709.0.0', 'X1031.0.0', 'X6160.0.0', 'X5201.0.0',
                      'X5208.0.0', 'X3731.0.0', 'X22040.0.0')
 
-  aux_vars <- main_vars %>%
+  aux_vars <- df %>%
     select(id, starts_with(aux_vars_list)) %>%
     rename(sex = X31.0.0, height_0 = X50.0.0, weight_0 = X21002.0.0,
            waist_circ_0 = X48.0.0, lonely_0 = X2020.0.0,
@@ -161,4 +161,15 @@ get_aux_vars <- function(df){
   fam_ill <- fam_ill %>%
     select(-c(starts_with('X'), all_NA)) %>%
     mutate(across(everything(), as.factor))
+
+  # merge with the rest of auxiliary variables
+  aux_vars <- aux_vars %>%
+    select(-c(starts_with('X'))) %>%
+    mutate(across(c('ProsMem_0', 'sex', 'alcohol_0', 'alcohol_ex', 'leisure_0',
+                    'education_0', 'phys_act', 'visits_0', 'lonely_0',
+                    'id'),
+                  as.factor)) %>%
+    inner_join(fam_ill, by = 'id')
+
+  return(aux_vars)
 }
