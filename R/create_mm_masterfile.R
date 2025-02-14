@@ -206,7 +206,7 @@ create_mm_masterfile <- function(df,
     dis_self <- dis_self %>%
       mutate(across(all_of(nas_to_zero), ~ replace_na(., '0')))
 
-    dis_self <- merge(subset(main_vars, select = c(id, age)),
+    dis_self <- merge(subset(main_vars, select = c(id, ass_age)),
                       dis_self,
                       by = 'id', all.y = TRUE)
 
