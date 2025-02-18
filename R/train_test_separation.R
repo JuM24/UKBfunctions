@@ -1,8 +1,10 @@
 #' Separate the data into train and test sets
 #'
 #' `train_test_separation` takes a data frame with all variables required for
-#' training and separates it into train and test sets.
+#' training and separates it into train and test sets. The target variable -
+#' if present in the data frame - will be removed.
 #' @param df The input data frame.
+#' @param target The name of the column with the target variable.
 #' @param train_prop Proportion of observations to be allocated to train set.
 #' @param random_seed Random seed set just prior to train/test split.
 #' @param impute_missing Whether missing observations should be imputed with
@@ -22,6 +24,7 @@
 #' @export
 
 train_test_separation <- function(df,
+                                  target,
                                   train_prop,
                                   random_seed,
                                   impute_missing,
@@ -60,6 +63,12 @@ train_test_separation <- function(df,
   # remove constants
   train_set <- train_set[, sapply(train_set, function(x) length(unique(x))) > 1]
   test_set <- test_set[, sapply(test_set, function(x) length(unique(x))) > 1]
+
+  # remove outcome if present in data
+  if (target %in% colnames(df)){
+    train_set[[target]] <- NULL
+    test_set[[target]] <- NULL
+  }
 
   if (impute_missing == TRUE){
     imp_train <- missRanger::missRanger(data = train_set,
