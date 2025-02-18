@@ -6,6 +6,7 @@
 \usage{
 train_test_separation(
   df,
+  target,
   train_prop,
   random_seed,
   impute_missing,
@@ -18,6 +19,8 @@ train_test_separation(
 }
 \arguments{
 \item{df}{The input data frame.}
+
+\item{target}{The name of the column with the target variable.}
 
 \item{train_prop}{Proportion of observations to be allocated to train set.}
 
@@ -45,5 +48,6 @@ imputation; corresponds to \code{pmm.k} argument in \code{missRanger} and releva
 }
 \description{
 \code{train_test_separation} takes a data frame with all variables required for
-training and separates it into train and test sets.
+training and separates it into train and test sets. The target variable -
+if present in the data frame - will be removed.
 }
