@@ -16,10 +16,10 @@ create_mm_masterfile <- function(df,
 
   ## remove participants that were younger than XX at assessment
   df$birth_date <- as.Date(paste0('01/',
-                                         as.character(df$X52.0.0),
-                                         '/' ,
-                                         as.character(df$X34.0.0)),
-                                  format = '%d/%m/%Y')
+                                  as.character(df$X52.0.0),
+                                  '/' ,
+                                  as.character(df$X34.0.0)),
+                           format = '%d/%m/%Y')
 
   # calculate number of days in each birth month
   df$days_in_birth_month <-
