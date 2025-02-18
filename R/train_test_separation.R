@@ -81,9 +81,10 @@ train_test_separation <- function(df,
                                        seed = imp_seed)
     # create list of relevant objects to return
     return_object <- list(imp_train, train_ids, train_indices,
-                          imp_test, test_ids, test_indices)
+                          imp_test, test_ids, test_indices, specs)
     names(return_object) <- c('train_set_imputed', 'train_ids', 'train_indices',
-                              'test_set_imputed', 'test_ids', 'test_indices')
+                              'test_set_imputed', 'test_ids', 'test_indices',
+                              'specs')
 
   } else if (impute_missing == FALSE){
     return_object <- list(train_set, train_ids, train_indices,
