@@ -29,6 +29,7 @@ amend_mm_features <- function(df,
                       df$hear_add_2 == '1' |
                       df$hear_add_3 == '1' |
                       df$hear_add_4 == '1'] <- '1'
+  df$hearing <- as.factor(df$hearing)
 
   # alcohol
   df$alcohol[df$alc_add_1 == '1'] <- '1'
