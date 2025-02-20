@@ -7,11 +7,11 @@
 correct_balance(
   df,
   target_var,
-  approach,
-  balance_prop,
+  approach = NULL,
+  balance_prop = 0.5,
   random_seed,
   ordinals,
-  K
+  K = 5
 )
 }
 \arguments{

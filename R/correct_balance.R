@@ -19,11 +19,11 @@
 
 correct_balance <- function(df,
                             target_var,
-                            approach,
-                            balance_prop,
+                            approach = NULL,
+                            balance_prop = 0.5,
                             random_seed,
                             ordinals,
-                            K){
+                            K = 5){
   set.seed(random_seed)
 
   # the numbers of minority and majority class observations
@@ -119,6 +119,8 @@ correct_balance <- function(df,
     df_donwsampled <- rbind(majority_cases, minority_cases)
 
     return(df_downsampled)
+  } else if (is.null(approach)){
+    return(df)
   }
 }
 
