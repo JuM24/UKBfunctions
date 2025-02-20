@@ -11,6 +11,7 @@ correct_balance(
   balance_prop = 0.5,
   random_seed,
   ordinals,
+  undo_dummies = TRUE,
   K = 5
 )
 }
@@ -32,6 +33,11 @@ current minority class. 0.5 will completely balance the classes.}
 the ordinal variables in the data frame. All character/factor columns
 not included in this list will be considered as nominal variables, and
 all numerical variables as numerical.}
+
+\item{undo_dummies}{Relevant for SMOTE. Whether dummy variables created for
+nominal categorical variables should be turned back into their original form.
+This reduces the number of variables so that e.g., we have "sex" instead of
+"sex.0" and "sex.1".}
 
 \item{K}{Relevant for SMOTE. The number of nearest neighbours for KNN.}
 }

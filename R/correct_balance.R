@@ -14,6 +14,10 @@
 #' the ordinal variables in the data frame. All character/factor columns
 #' not included in this list will be considered as nominal variables, and
 #' all numerical variables as numerical.
+#' @param undo_dummies Relevant for SMOTE. Whether dummy variables created for
+#' nominal categorical variables should be turned back into their original form.
+#' This reduces the number of variables so that e.g., we have "sex" instead of
+#' "sex.0" and "sex.1".
 #' @param K Relevant for SMOTE. The number of nearest neighbours for KNN.
 #' @export
 
@@ -23,8 +27,8 @@ correct_balance <- function(df,
                             balance_prop = 0.5,
                             random_seed,
                             ordinals,
+                            undo_dummies = TRUE,
                             K = 5){
-  set.seed(random_seed)
 
   # the numbers of minority and majority class observations
   num_minority <- min(table(df[[target_var]]))
@@ -52,11 +56,6 @@ correct_balance <- function(df,
     df_new <- df_new %>%
       mutate_if(is.character, as.factor)
 
-    # one-hot encoding for nominal variables
-    dmy <- dummyVars(' ~ .', data = df_new[, -which(names(df_new) == target_var)])
-    X <- data.frame(predict(dmy, newdata = df_new[, -which(names(df_new) == target_var)]))
-    target_var_value <- df_new[[target_var]]
-
     # if user wants complete balance, leave `dup_size` argument at default value
     if (balance_prop == 0.5){
       dup_size <- 0
@@ -72,7 +71,13 @@ correct_balance <- function(df,
       }
     }
 
+    # one-hot encoding for nominal variables
+    dmy <- dummyVars(' ~ .', data = df_new[, -which(names(df_new) == target_var)])
+    X <- data.frame(predict(dmy, newdata = df_new[, -which(names(df_new) == target_var)]))
+    target_var_value <- df_new[[target_var]]
+
     # apply SMOTE
+    set.seed(random_seed)
     data_smote <- smotefamily::SMOTE(X = X,
                                      target = target_var_value,
                                      K = K,
@@ -80,9 +85,6 @@ correct_balance <- function(df,
 
     # create new data frame
     df_smote <- data_smote$data
-
-    # remove potential dots inserted into the column names
-    colnames(df_smote) <- gsub('\\.', '', colnames(df_smote))
 
     # select all variables except the target (the only one still categorical)
     numeric_vars <- colnames(df_smote %>%
@@ -92,10 +94,25 @@ correct_balance <- function(df,
     # and must be a nominal variable
     categ_vars <- numeric_vars[!numeric_vars %in% colnames(df_new)]
 
-    # all nominal and ordinal variables to factors
+    # categorical variables were assigned values that might not exist;
+    # we have to round them to get plausible values
     df_smote <- df_smote %>%
-      mutate(across(starts_with(c(categ_vars, ordinals)), round)) %>%
-      mutate(across(starts_with(c(categ_vars, ordinals)), as.factor))
+      mutate(across(starts_with(c(categ_vars, ordinals)), round))
+
+    # potentially undo hot-one-encoding and get original variables
+    if (undo_dummies == TRUE){
+      df <- undo_dummies(df = df,
+                         remove_dummies = TRUE,
+                         verbose = verbose)
+      # ordinals back to factors
+      df_smote <- df_smote %>%
+        mutate(across(starts_with(ordinals), as.factor))
+
+    } else if (undo_dummies == FALSE){
+      # ordinals and dummy categoricals back to factors
+      df_smote <- df_smote %>%
+        mutate(across(starts_with(c(ordinals, categor_vars)), as.factor))
+    }
 
     # rename back outcome variable
     colnames(df_smote)[colnames(df_smote) == 'class'] <- target_var
@@ -112,6 +129,7 @@ correct_balance <- function(df,
     minority_cases <- subset(df, df[[target_var]] == minority_name)
 
     # random sample of the majority class
+    set.seed(random_seed)
     majority_sample <- sample(majority_cases$id, desired_majority)
 
     # downsample and merge the two classes
@@ -123,5 +141,3 @@ correct_balance <- function(df,
     return(df)
   }
 }
-
-
