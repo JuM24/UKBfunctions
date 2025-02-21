@@ -68,9 +68,9 @@ train_mm <- function(df,
                (!is.na(target_time) & target_time <= max_followup))
   }
 
-  # remove unused variable
+  # remove redundant variable
   df <- df %>%
-    select(-followup)
+    select(-target_time)
 
   # save model specifications to be returned
   specs <- c(amend_features, min_age, max_followup, random_seed,
