@@ -4,12 +4,14 @@
 \alias{amend_mm_features}
 \title{Correct class imbalance}
 \usage{
-amend_mm_features(df, mm_source = "self_report")
+amend_mm_features(df, mm_source = "self_report", verbose = FALSE)
 }
 \arguments{
 \item{df}{The input data frame.}
 
 \item{mm_source}{The source of disease history.}
+
+\item{verbose}{Whether to print progress to console.}
 }
 \description{
 \code{amend_mm_features} takes the data frame and amends the MM features with

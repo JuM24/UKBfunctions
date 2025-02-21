@@ -5,11 +5,12 @@
 #' converts the dummy variables into their original multi-level form.
 #' @param df The input data frame.
 #' @param remove_dummies Whether the dummy variables should be removed.
+#' @param verbose Whether to print progress to console.
 #' @export
 
 undo_dummies <- function(df,
                          remove_dummies = TRUE,
-                         verbose = verbose){
+                         verbose = FALSE){
 
   # find all dummy columns (ending with '.<digit>')
   dummy_cols <- grep('\\.[0-9]+$', names(df), value = TRUE)
@@ -18,7 +19,7 @@ undo_dummies <- function(df,
   base_vars <- unique(sub('\\.[0-9]+$', '', dummy_cols))
 
   if (verbose) {
-    cat('Undoing hot-one-encoding... ')
+    cat('Undoing hot-one-encoding: ')
     flush.console()
   }
 

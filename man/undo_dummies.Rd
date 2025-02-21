@@ -4,12 +4,14 @@
 \alias{undo_dummies}
 \title{Undo hot-one-encoding}
 \usage{
-undo_dummies(df, remove_dummies = TRUE, verbose = verbose)
+undo_dummies(df, remove_dummies = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{df}{The input data frame.}
 
 \item{remove_dummies}{Whether the dummy variables should be removed.}
+
+\item{verbose}{Whether to print progress to console.}
 }
 \description{
 \code{undo_dummies} takes a data frame with dummy variables created by

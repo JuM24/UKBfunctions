@@ -10,16 +10,19 @@ train_mm(
   features,
   amend_features = FALSE,
   min_age,
+  max_followup = NULL,
   algorithm,
+  train_metric = "ROC",
   cv_folds,
   tune_len,
   distribute_cores,
   core_number,
   random_seed,
+  verbose = FALSE,
   imbalance_correct = NULL,
-  balance_prop,
-  ordinals,
-  smote_K
+  balance_prop = NULL,
+  ordinals = NULL,
+  smote_K = NULL
 )
 }
 \arguments{
@@ -33,7 +36,15 @@ self-report data.}
 \item{min_age}{The minimum age of the sample. Determines whether participants
 below a certain age should be dropped prior to training.}
 
+\item{max_followup}{The time within which the outcome that is to be
+predicted should occur. If not set to \code{NULL}, the input data frame must
+contain a column called 'followup' which is the time in years between baseline
+and right-censoring or event occurrence, whichever occurs first.}
+
 \item{algorithm}{The algorithm to be used for prediction.}
+
+\item{train_metric}{Which metric to optimise on. Available options are
+"Accuracy", "Kappa", "ROC", "Sens", and "Spec".}
 
 \item{cv_folds}{The number of folds to be used during cross-validation;
 corresponds to the argument \code{number} in \code{caret::trainControl}.}
@@ -51,16 +62,18 @@ doRNG for reproducible parallel processing, and 3. generation of further
 seeds to be used in the generation of the cross-validation folds and of the
 tuning grid - argument \code{seeds} in \code{caret::trainControl}.}
 
+\item{verbose}{Whether to print progress to console.}
+
 \item{imbalance_correct}{Whether potential class imbalance between levels
 of the target variables should be corrected.}
 
-\item{balance_prop}{Relevant only if \code{imbalance_correct = TRUE}; the desired
+\item{balance_prop}{Relevant only in the case of imbalance correction; the desired
 proportion of the total observations for the current minority class.}
 
-\item{ordinals}{Relevant only if \code{imbalance_correct = TRUE}; a list of all
+\item{ordinals}{Relevant only when \code{imbalance_correct = 'SMOTE'}; a list of all
 ordinal variables in the data frame.}
 
-\item{smote_K}{Relevant only if \code{imbalance_correct = TRUE}; determines the
+\item{smote_K}{Relevant only when \code{imbalance_correct = 'SMOTE'}; determines the
 K used in KNN during SMOTE.}
 }
 \description{

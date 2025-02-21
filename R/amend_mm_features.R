@@ -4,10 +4,17 @@
 #' additional data.
 #' @param df The input data frame.
 #' @param mm_source The source of disease history.
+#' @param verbose Whether to print progress to console.
 #' @export
 
 amend_mm_features <- function(df,
-                              mm_source = 'self_report'){
+                              mm_source = 'self_report',
+                              verbose = FALSE){
+
+  if (verbose == TRUE){
+    print('Amending features to include additional data from self-report.')
+    cat('\n')
+  }
 
   adds <- paste0(rep('add_', 9), as.character(seq(1,9)))
   colnames(select(df, ends_with(adds)))

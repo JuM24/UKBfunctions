@@ -10,6 +10,7 @@
 #' @param balance_prop The desired proportion of the total for the
 #' current minority class. 0.5 will completely balance the classes.
 #' @param random_seed The random seed run at the start of the function.
+#' @param verbose Whether to print progress to console.
 #' @param ordinals Relevant for SMOTE. A list of column names indicating
 #' the ordinal variables in the data frame. All character/factor columns
 #' not included in this list will be considered as nominal variables, and
@@ -26,7 +27,8 @@ correct_balance <- function(df,
                             approach = NULL,
                             balance_prop = 0.5,
                             random_seed,
-                            ordinals,
+                            verbose = FALSE,
+                            ordinals = c(),
                             undo_dummies = TRUE,
                             K = 5){
 
@@ -39,9 +41,14 @@ correct_balance <- function(df,
   minority_name <- names(which(table(df[[target_var]]) == num_minority))
 
   # implement SMOTE to increase sample size of minority class
-  if (approach == 'SMOTE'){
+  if (is.null(approach)){
+    return(df)
+  } else if (approach == 'SMOTE'){
     library(caret)
 
+    if (verbose == TRUE){
+      print('Applying SMOTE...')
+    }
     df_new <- df %>%
       mutate_if(is.integer, as.numeric)
 
@@ -101,7 +108,7 @@ correct_balance <- function(df,
 
     # potentially undo hot-one-encoding and get original variables
     if (undo_dummies == TRUE){
-      df <- undo_dummies(df = df,
+      df_smote <- undo_dummies(df = df_smote,
                          remove_dummies = TRUE,
                          verbose = verbose)
       # ordinals back to factors
@@ -120,9 +127,22 @@ correct_balance <- function(df,
     df_smote <- df_smote %>%
       mutate_if(is.character, as.factor)
 
+    if (verbose == TRUE){
+      # return the number of removed cases from the majority class
+      added_cases <- as.character(nrow(data_smote$syn_data))
+      print(paste0('Added ', added_cases, ' synthetic observations of the minority class.'))
+      cat('\n')
+    }
+
+
     return(df_smote)
 
   } else if (approach == 'downsample'){
+
+    if (verbose == TRUE){
+      print('Downsampling...')
+    }
+
     # calculate the desired number of majority observations based on `balance_prop`
     desired_majority <- num_minority/balance_prop - num_minority
     majority_cases <- subset(df, df[[target_var]] == majority_name)
@@ -133,11 +153,18 @@ correct_balance <- function(df,
     majority_sample <- sample(majority_cases$id, desired_majority)
 
     # downsample and merge the two classes
-    majority_cases <- majority_cases[majority_cases$id %in% majority_sample, ]
-    df_donwsampled <- rbind(majority_cases, minority_cases)
+    majority_cases_downsampled <- majority_cases[majority_cases$id %in% majority_sample, ]
+    df_downsampled <- rbind(majority_cases_downsampled, minority_cases)
+
+    if (verbose == TRUE){
+      # return the number of removed cases from the majority class
+      removed_cases <- as.character(nrow(majority_cases) -
+                                      nrow(majority_cases_downsampled))
+      print(paste0('Removed ', removed_cases, ' observations of the majority class.'))
+      cat('\n')
+    }
 
     return(df_downsampled)
-  } else if (is.null(approach)){
-    return(df)
+
   }
 }

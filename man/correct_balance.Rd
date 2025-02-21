@@ -10,7 +10,8 @@ correct_balance(
   approach = NULL,
   balance_prop = 0.5,
   random_seed,
-  ordinals,
+  verbose = FALSE,
+  ordinals = c(),
   undo_dummies = TRUE,
   K = 5
 )
@@ -28,6 +29,8 @@ The possible choices are 'downsample' and 'SMOTE'.}
 current minority class. 0.5 will completely balance the classes.}
 
 \item{random_seed}{The random seed run at the start of the function.}
+
+\item{verbose}{Whether to print progress to console.}
 
 \item{ordinals}{Relevant for SMOTE. A list of column names indicating
 the ordinal variables in the data frame. All character/factor columns
