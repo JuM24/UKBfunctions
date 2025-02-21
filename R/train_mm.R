@@ -67,6 +67,11 @@ train_mm <- function(df,
       filter(followup <= max_followup)
   }
 
+  # remove unused variables
+  df <- df %>%
+    select(-c(target_date, ass_date, data_provider, censor_date, end_date,
+              followup))
+
   # save model specifications to be returned
   specs <- c(amend_features, min_age, max_followup, random_seed,
              imbalance_correct, balance_prop, smote_K)
