@@ -70,7 +70,7 @@ get_data_provider <- function(df,
     filter(eid %in% multi_source$eid) %>%
     filter(!is.na(epistart)) %>%
     data.table::as.data.table(diagnoses_dates)
-  inpatient_flux_last <- as.data.frame(diagnoses_dates_dt[, .(epistart = max(epistart, na.rm = TRUE)), by = eid])
+  inpatient_flux_last <- as.data.frame(diagnoses_dates_dt[, list(epistart = max(epistart, na.rm = TRUE)), by = eid])
   inpatient_flux_last <- merge(inpatient_flux_last, subset(diagnoses_dates, select = c(eid, epistart, dsource)),
                                by = c('eid', 'epistart'), all.x = TRUE) %>%
     rename(id = eid, data_provider = dsource) %>%
