@@ -70,8 +70,23 @@ train_mm <- function(df,
   # save model specifications to be returned
   specs <- c(amend_features, min_age, max_followup, random_seed,
              imbalance_correct, balance_prop, smote_K)
-  names(specs) = c('amend_features', 'min_age', 'max_followup', 'random_seed',
-                   'imbalance_correct', 'balance_prop', 'smote_K')
+
+  if (!is.null(imbalance_correct)){
+    if(imbalance_correct == 'SMOTE'){
+      names(specs) = c('amend_features', 'min_age', 'max_followup', 'random_seed',
+                       'imbalance_correct', 'balance_prop', 'smote_K')
+
+    } else if (imbalance_correct == 'downsample'){
+      specs <- c(amend_features, min_age, max_followup, random_seed,
+                 imbalance_correct, balance_prop)
+      names(specs) = c('amend_features', 'min_age', 'max_followup', 'random_seed',
+                       'imbalance_correct', 'balance_prop')
+    }
+  } else if (is.null(imbalance_correct)){
+    specs <- c(amend_features, min_age, max_followup, random_seed)
+    names(specs) = c('amend_features', 'min_age', 'max_followup', 'random_seed')
+
+  }
 
   if (amend_features == TRUE){
     # amend features with additional data
