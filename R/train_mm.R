@@ -64,7 +64,8 @@ train_mm <- function(df,
     max_followup <- c(NULL, max(df$followup))
   } else {
     df <- df %>%
-      filter(followup <= max_followup)
+      filter(is.na(target_time) |
+               (!is.na(target_time) & target_time <= max_followup))
   }
 
   # remove unused variable
