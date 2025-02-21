@@ -20,6 +20,7 @@
 #' 'PEDW' replace all NAs with the censoring date of the corresponding data provider.
 #' @param random_seed Relevant only when `fill_NAs = 'random'`; the random seed
 #' set before the sampling.
+#' @importFrom data.table as.data.table
 #' @export
 
 get_data_provider <- function(df,
@@ -70,6 +71,7 @@ get_data_provider <- function(df,
     filter(eid %in% multi_source$eid) %>%
     filter(!is.na(epistart)) %>%
     data.table::as.data.table(.)
+
   inpatient_flux_last <- as.data.frame(diagnoses_dates_dt[, list(epistart = max(epistart, na.rm = TRUE)), by = eid])
   inpatient_flux_last <- merge(inpatient_flux_last, subset(diagnoses_dates, select = c(eid, epistart, dsource)),
                                by = c('eid', 'epistart'), all.x = TRUE) %>%
