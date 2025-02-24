@@ -9,6 +9,9 @@
 #' Random Forest using `missRanger::missRanger`. It assumes that there is a
 #' column called `id` that will not be used in the imputation; all other
 #' columns of the data frame are used.
+#' @param exclude_vars Whether any variables should be excluded from the
+#' imputation. By default, the column `id` is excluded; if all should be used,
+#' set to `NULL`.
 #' @param imp_threads How many threads should be used for the imputation.
 #' @param max_iter Number of iterations during imputation; corresponds to
 #' `max.iter` argument in `missRanger` and relevant only when
@@ -27,6 +30,7 @@ train_test_separation <- function(df,
                                   train_prop,
                                   random_seed,
                                   impute_missing,
+                                  exclude_vars = c('id'),
                                   imp_threads = 1,
                                   max_iter = 10,
                                   num_trees = 500,
@@ -38,7 +42,7 @@ train_test_separation <- function(df,
     specs <- c(train_prop, random_seed, impute_missing)
     names(specs) = c('train_prop', 'random_seed', 'impute_missing')
   } else if (impute_missing == TRUE){
-    specs <- c(, train_prop, random_seed, impute_missing,
+    specs <- c(train_prop, random_seed, impute_missing,
                imp_threads, max_iter, num_trees, pmm_k, imp_seed)
     names(specs) = c('train_prop', 'random_seed', 'impute_missing',
                      'imp_threads', 'max_iter', 'num_trees', 'pmm_k', 'imp_seed')
@@ -64,9 +68,18 @@ train_test_separation <- function(df,
   train_set <- train_set[, sapply(train_set, function(x) length(unique(x))) > 1]
   test_set <- test_set[, sapply(test_set, function(x) length(unique(x))) > 1]
 
+  # determine the imputation formula
+  if (!is.null(exclude_vars) && length(exclude_vars) > 0) {
+    exclude_str <- paste(exclude_vars, collapse = ' - ')
+    imp_formula <- as.formula(paste0('( . - ', exclude_str, ') ~ ( . - ', exclude_str, ')'))
+  } else {
+    # Use the default formula
+    imp_formula <- as.formula('. ~ .')
+  }
+
   if (impute_missing == TRUE){
     imp_train <- missRanger::missRanger(data = train_set,
-                                        formula = as.formula('. ~ . - id'), # do not use id column
+                                        formula = imp_formula,
                                         pmm.k = pmm_k,
                                         num.trees = num_trees,
                                         num.threads = imp_threads,
