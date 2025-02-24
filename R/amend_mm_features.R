@@ -1,4 +1,4 @@
-#' Correct class imbalance
+#' Create final features out of the variables
 #'
 #' `amend_mm_features` takes the data frame and amends the MM features with
 #' additional data.

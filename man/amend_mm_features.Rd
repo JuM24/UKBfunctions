@@ -2,7 +2,7 @@
 % Please edit documentation in R/amend_mm_features.R
 \name{amend_mm_features}
 \alias{amend_mm_features}
-\title{Correct class imbalance}
+\title{Create final features out of the variables}
 \usage{
 amend_mm_features(df, mm_source = "self_report", verbose = FALSE)
 }

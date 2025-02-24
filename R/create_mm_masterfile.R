@@ -36,8 +36,6 @@ create_mm_masterfile <- function(df,
                                          '/' ,
                                          as.character(df$X34.0.0)),
                                   format = '%d/%m/%Y')
-  df$ass_age <- as.numeric(difftime(df$X53.0.0, df$birth_date,
-                                           units = 'days'))/365.25
 
 
 
@@ -47,6 +45,9 @@ create_mm_masterfile <- function(df,
     #### ----------------------------------------- ####
     ####  Get field IDs for self-reported illness  ####
     #### ----------------------------------------- ####
+
+    df$asc_age <- as.numeric(difftime(df$X53.0.0, df$birth_date,
+                                      units = 'days'))/365.25
 
     ## categories 20001 and 20002
 
@@ -205,7 +206,7 @@ create_mm_masterfile <- function(df,
     dis_self <- dis_self %>%
       mutate(across(all_of(nas_to_zero), ~ replace_na(., '0')))
 
-    dis_self <- merge(subset(df, select = c(id, ass_age)),
+    dis_self <- merge(subset(df, select = c(id, asc_age)),
                       dis_self,
                       by = 'id', all.y = TRUE)
 
