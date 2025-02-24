@@ -51,7 +51,7 @@ create_mm_masterfile <- function(df,
     ## categories 20001 and 20002
 
     # import self-report disease codes
-    mm_codes <- read.csv('mm_self_report.csv') %>%
+    mm_codes <- read.csv(mm_codes_file) %>%
       filter(!is.na(code)) %>%
       mutate(code = as.character(code))
     # non-cancer self-report disorders from category 20002

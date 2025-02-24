@@ -9,6 +9,7 @@ train_test_separation(
   train_prop,
   random_seed,
   impute_missing,
+  exclude_vars = c("id"),
   imp_threads = 1,
   max_iter = 10,
   num_trees = 500,
@@ -27,6 +28,10 @@ train_test_separation(
 Random Forest using \code{missRanger::missRanger}. It assumes that there is a
 column called \code{id} that will not be used in the imputation; all other
 columns of the data frame are used.}
+
+\item{exclude_vars}{Whether any variables should be excluded from the
+imputation. By default, the column \code{id} is excluded; if all should be used,
+set to \code{NULL}.}
 
 \item{imp_threads}{How many threads should be used for the imputation.}
 
