@@ -46,7 +46,10 @@ create_mm_masterfile <- function(df,
     ####  Get field IDs for self-reported illness  ####
     #### ----------------------------------------- ####
 
-    df$asc_age <- as.numeric(difftime(df$X53.0.0, df$birth_date,
+    df <- df %>%
+      rename(asc_date = X53.0.0)
+    df$asc_date <- as.Date(df$asc_date, format = '%Y-%m-%d')
+    df$asc_age <- as.numeric(difftime(df$asc_date, df$birth_date,
                                       units = 'days'))/365.25
 
     ## categories 20001 and 20002
@@ -86,9 +89,7 @@ create_mm_masterfile <- function(df,
                                'X4067.0', 'X4792.0', 'X6148.0', 'X5441.0',
                                'X5912.0', 'X5934.0', 'X6119.0', 'X6159.0', 'X6148.0',
                                'X3393.0', 'X20404.', 'X20406.', 'X20456.', 'X20503.',
-                               'X20400.', 'X20401.', 'X53.0.0'))) %>%
-      # date of feature ascertainment for self-report is always the UKB baseline visit
-      rename(asc_date = X53.0.0)
+                               'X20400.', 'X20401.')))
 
     ## diabetes
     dis_other$diab_add_1 <- NA
@@ -206,11 +207,10 @@ create_mm_masterfile <- function(df,
     dis_self <- dis_self %>%
       mutate(across(all_of(nas_to_zero), ~ replace_na(., '0')))
 
-    dis_self <- merge(subset(df, select = c(id, asc_age)),
+
+    dis_self <- merge(subset(df, select = c(id, asc_age, asc_date)),
                       dis_self,
                       by = 'id', all.y = TRUE)
-
-    dis_self$asc_date <- as.Date(dis_self$asc_date, format = '%Y-%m-%d')
 
     return(dis_self)
 
