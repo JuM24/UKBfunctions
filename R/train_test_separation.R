@@ -88,7 +88,7 @@ train_test_separation <- function(df,
                                         seed = imp_seed)
 
     imp_test <- missRanger::missRanger(data = test_set,
-                                       formula = as.formula('. ~ . - id'),
+                                       formula = imp_formula,
                                        pmm.k = pmm_k,
                                        num.trees = num_trees,
                                        num.threads = imp_threads,
