@@ -32,6 +32,12 @@ correct_balance <- function(df,
                             undo_dummies = TRUE,
                             K = 5){
 
+  # normalise numerical variables
+  df <- df %>%
+    mutate_if(is.integer, as.numeric)
+  numeric_columns <- sapply(df, is.numeric)
+  df[numeric_columns] <- lapply(df[numeric_columns], function(x) as.vector(scale(x)))
+
   # the numbers of minority and majority class observations
   num_minority <- min(table(df[[target_var]]))
   num_majority <- max(table(df[[target_var]]))
@@ -43,24 +49,19 @@ correct_balance <- function(df,
   # implement SMOTE to increase sample size of minority class
   if (is.null(approach)){
     return(df)
+
   } else if (approach == 'SMOTE'){
     library(caret)
 
     if (verbose == TRUE){
       print('Applying SMOTE...')
     }
-    df_new <- df %>%
-      mutate_if(is.integer, as.numeric)
-
-    # normalise numerical variables
-    numeric_columns <- sapply(df_new, is.numeric)
-    df_new[numeric_columns] <- lapply(df_new[numeric_columns], function(x) as.vector(scale(x)))
 
     # ordinal variables to integers (required for KNN)
-    df_new[ordinals] <- lapply(df_new[ordinals], as.integer)
+    df[ordinals] <- lapply(df[ordinals], as.integer)
 
     # all other variables are factors
-    df_new <- df_new %>%
+    df <- df %>%
       mutate_if(is.character, as.factor)
 
     # if user wants complete balance, leave `dup_size` argument at default value
@@ -79,9 +80,9 @@ correct_balance <- function(df,
     }
 
     # one-hot encoding for nominal variables
-    dmy <- dummyVars(' ~ .', data = df_new[, -which(names(df_new) == target_var)])
-    X <- data.frame(predict(dmy, newdata = df_new[, -which(names(df_new) == target_var)]))
-    target_var_value <- df_new[[target_var]]
+    dmy <- dummyVars(' ~ .', data = df[, -which(names(df) == target_var)])
+    X <- data.frame(predict(dmy, newdata = df[, -which(names(df) == target_var)]))
+    target_var_value <- df[[target_var]]
 
     # apply SMOTE
     set.seed(random_seed)
@@ -162,6 +163,7 @@ correct_balance <- function(df,
                                       nrow(majority_cases_downsampled))
       print(paste0('Removed ', removed_cases, ' observations of the majority class.'))
       cat('\n')
+
     }
 
     return(df_downsampled)
