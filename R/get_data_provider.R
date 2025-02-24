@@ -225,14 +225,29 @@ get_data_provider <- function(df,
   # replace NAs by censoring date of chosen data provider or by random data provider
   if (!is.null(fill_NAs)){
     if (fill_NAs == 'random'){
-      random_pool <- output_df$censor_date[!is.na(output_df$censor_date)]
+      random_pool <- output_df$data_provider[!is.na(output_df$data_provider)]
+
       set.seed(random_seed)
-      output_df$censor_date[is.na(output_df$censor_date)] <-
-        sample(random_pool, sum(is.na(output_df$censor_date)), replace = TRUE)
+
+      output_df$data_provider[is.na(output_df$data_provider)] <-
+        sample(random_pool, sum(is.na(output_df$data_provider)), replace = TRUE)
+
+
     } else {
-      output_df$censor_date[is.na(output_df$censor_date)] <-
-        date_frame$censor_date[date_frame$data_provider == fill_NAs]
+
+      output_df$data_provider[is.na(output_df$censor_date)] <-
+        date_frame$data_provider[date_frame[, 2] == fill_NAs]
     }
+    # add censoring date
+    output_df$censor_date[is.na(output_df$censor_date) &
+                            output_df$data_provider == 'HES'] <-
+      date_frame$censor_date[date_frame[, 2] == 'HES']
+    output_df$censor_date[is.na(output_df$censor_date) &
+                            output_df$data_provider == 'SMR'] <-
+      date_frame$censor_date[date_frame[, 2] == 'SMR']
+    output_df$censor_date[is.na(output_df$censor_date) &
+                            output_df$data_provider == 'PEDW'] <-
+      date_frame$censor_date[date_frame[, 2] == 'PEDW']
   }
 
   output_df$censor_date <- as.Date(output_df$censor_date, format = '%d.%m.%Y')
