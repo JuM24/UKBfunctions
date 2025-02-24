@@ -5,14 +5,6 @@
 #' the supplied features.
 #' @param df The input data frame.
 #' @param target_var The target variable to be predicted.
-#' @param amend_features Whether features should be amended; relevant only for
-#' self-report data.
-#' @param min_age The minimum age of the sample. Determines whether participants
-#' below a certain age should be dropped prior to training.
-#' @param max_followup The time within which the outcome that is to be
-#' predicted should occur. If not set to `NULL`, the input data frame must
-#' contain a column called 'followup' which is the time in years between baseline
-#' and right-censoring or event occurrence, whichever occurs first.
 #' @param algorithm The algorithm to be used for prediction.
 #' @param train_metric Which metric to optimise on. Available options are
 #' "Accuracy", "Kappa", "ROC", "Sens", and "Spec".
@@ -29,22 +21,11 @@
 #' seeds to be used in the generation of the cross-validation folds and of the
 #' tuning grid - argument `seeds` in `caret::trainControl`.
 #' @param verbose Whether to print progress to console.
-#' @param imbalance_correct Whether potential class imbalance between levels
-#' of the target variables should be corrected.
-#' @param balance_prop Relevant only in the case of imbalance correction; the desired
-#' proportion of the total observations for the current minority class.
-#' @param ordinals Relevant only when `imbalance_correct = 'SMOTE'`; a list of all
-#' ordinal variables in the data frame.
-#' @param smote_K Relevant only when `imbalance_correct = 'SMOTE'`; determines the
-#' K used in KNN during SMOTE.
 #' @export
 
 train_mm <- function(df,
                      target_var,
                      features,
-                     amend_features = FALSE,
-                     min_age,
-                     max_followup = NULL,
                      algorithm,
                      train_metric = 'ROC',
                      cv_folds,
@@ -52,88 +33,8 @@ train_mm <- function(df,
                      distribute_cores,
                      core_number,
                      random_seed,
-                     verbose = FALSE,
-                     imbalance_correct = NULL,
-                     balance_prop = NULL,
-                     ordinals = NULL,
-                     smote_K = NULL){
+                     verbose = FALSE){
 
-
-  # remove participants that experienced the outcome after the follow-up cutoff
-  if (is.null(max_followup)){
-    max_followup <- c(NULL, max(df$followup))
-  } else {
-    df <- df %>%
-      filter(is.na(target_time) |
-               (!is.na(target_time) & target_time <= max_followup))
-  }
-
-  # remove redundant variable
-  df <- df %>%
-    select(-target_time)
-
-  # save model specifications to be returned
-  specs <- c(amend_features, min_age, max_followup, random_seed,
-             imbalance_correct, balance_prop, smote_K)
-
-  if (!is.null(imbalance_correct)){
-    if(imbalance_correct == 'SMOTE'){
-      names(specs) = c('amend_features', 'min_age', 'max_followup', 'random_seed',
-                       'imbalance_correct', 'balance_prop', 'smote_K')
-
-    } else if (imbalance_correct == 'downsample'){
-      specs <- c(amend_features, min_age, max_followup, random_seed,
-                 imbalance_correct, balance_prop)
-      names(specs) = c('amend_features', 'min_age', 'max_followup', 'random_seed',
-                       'imbalance_correct', 'balance_prop')
-    }
-  } else if (is.null(imbalance_correct)){
-    specs <- c(amend_features, min_age, max_followup, random_seed)
-    names(specs) = c('amend_features', 'min_age', 'max_followup', 'random_seed')
-
-  }
-
-  if (amend_features == TRUE){
-    # amend features with additional data
-    df <- amend_mm_features(df = df,
-                            verbose = verbose)
-  }
-
-  # save age mean and SD to scale later on
-  old_age_mean <- mean(df$ass_age, na.rm = TRUE)
-  old_age_sd <- sd(df$ass_age, na.rm = TRUE)
-
-  # potentially correct class imbalance
-  df <- correct_balance(df = df,
-                        target_var = target_var,
-                        approach = imbalance_correct,
-                        balance_prop = balance_prop,
-                        random_seed = random_seed,
-                        verbose = verbose,
-                        ordinals = ordinals,
-                        K = smote_K)
-
-  # normalise and centre (not necessary if SMOTE has been run)
-  if (is.null(imbalance_correct)){
-    num_cols <- sapply(df, is.numeric)
-    df[num_cols] <- scale(df[num_cols])
-  } else if (imbalance_correct == 'downsample'){
-    num_cols <- sapply(df, is.numeric)
-    df[num_cols] <- scale(df[num_cols])
-  }
-
-  # remove younger participants
-  if (!is.null(min_age)){
-    old_nrow <- nrow(df)
-    # convert min_age to the corresponding scaled cutoff
-    scaled_min_age <- (min_age - old_age_mean) / old_age_sd
-    df <- df %>%
-      filter(ass_age >= scaled_min_age)
-    if (verbose == TRUE){
-      print(paste0('Removed ', as.character(old_nrow - nrow(df)), ' participants younger than ', as.character(min_age), '.'))
-      cat('\n')
-    }
-  }
 
   ## Training
 

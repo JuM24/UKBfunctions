@@ -6,7 +6,6 @@
 \usage{
 train_test_separation(
   df,
-  target,
   train_prop,
   random_seed,
   impute_missing,
@@ -20,14 +19,14 @@ train_test_separation(
 \arguments{
 \item{df}{The input data frame.}
 
-\item{target}{The name of the column with the target variable.}
-
 \item{train_prop}{Proportion of observations to be allocated to train set.}
 
 \item{random_seed}{Random seed set just prior to train/test split.}
 
 \item{impute_missing}{Whether missing observations should be imputed with
-Random Forest using \code{missRanger::missRanger}.}
+Random Forest using \code{missRanger::missRanger}. It assumes that there is a
+column called \code{id} that will not be used in the imputation; all other
+columns of the data frame are used.}
 
 \item{imp_threads}{How many threads should be used for the imputation.}
 
@@ -47,7 +46,6 @@ imputation; corresponds to \code{pmm.k} argument in \code{missRanger} and releva
 \code{missRanger} and relevant only when \code{impute_missing = TRUE}.}
 }
 \description{
-\code{train_test_separation} takes a data frame with all variables required for
-training and separates it into train and test sets. The target variable -
-if present in the data frame - will be removed.
+\code{train_test_separation} takes a data frame with all features required for
+training and separates it into train and test sets.
 }

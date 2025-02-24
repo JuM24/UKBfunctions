@@ -209,6 +209,8 @@ create_mm_masterfile <- function(df,
                       dis_self,
                       by = 'id', all.y = TRUE)
 
+    dis_self$asc_date <- as.Date(dis_self$asc_date, format = '%Y-%m-%d')
+
     return(dis_self)
 
   } else if (source == 'inpatient'){

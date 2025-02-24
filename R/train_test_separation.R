@@ -6,7 +6,9 @@
 #' @param train_prop Proportion of observations to be allocated to train set.
 #' @param random_seed Random seed set just prior to train/test split.
 #' @param impute_missing Whether missing observations should be imputed with
-#' Random Forest using `missRanger::missRanger`.
+#' Random Forest using `missRanger::missRanger`. It assumes that there is a
+#' column called `id` that will not be used in the imputation; all other
+#' columns of the data frame are used.
 #' @param imp_threads How many threads should be used for the imputation.
 #' @param max_iter Number of iterations during imputation; corresponds to
 #' `max.iter` argument in `missRanger` and relevant only when
@@ -61,7 +63,6 @@ train_test_separation <- function(df,
   # remove constants
   train_set <- train_set[, sapply(train_set, function(x) length(unique(x))) > 1]
   test_set <- test_set[, sapply(test_set, function(x) length(unique(x))) > 1]
-
 
   if (impute_missing == TRUE){
     imp_train <- missRanger::missRanger(data = train_set,
