@@ -85,7 +85,10 @@ create_mm_masterfile <- function(df,
                                'X4067.0', 'X4792.0', 'X6148.0', 'X5441.0',
                                'X5912.0', 'X5934.0', 'X6119.0', 'X6159.0', 'X6148.0',
                                'X3393.0', 'X20404.', 'X20406.', 'X20456.', 'X20503.',
-                               'X20400.', 'X20401.')))
+                               'X20400.', 'X20401.', 'X53.0.0'))) %>%
+      # date of feature ascertainment for self-report is always the UKB baseline visit
+      rename(asc_date = X53.0.0)
+
     ## diabetes
     dis_other$diab_add_1 <- NA
     dis_other$diab_add_1[dis_other$X2443.0.0 == 1] <- 1
@@ -207,5 +210,8 @@ create_mm_masterfile <- function(df,
                       by = 'id', all.y = TRUE)
 
     return(dis_self)
+
+  } else if (source == 'inpatient'){
+    # TODO
   }
 }
