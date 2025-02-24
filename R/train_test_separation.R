@@ -37,7 +37,7 @@ train_test_separation <- function(df,
                                   num_trees = 500,
                                   pmm_k = 5,
                                   imp_seed,
-                                  verbose = verbose){
+                                  verbose = FALSE){
 
     # save chosen specs
   if (impute_missing == FALSE){
