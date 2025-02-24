@@ -24,6 +24,7 @@
 #' `impute_missing = TRUE`.
 #' @param imp_seed Seed for the imputation; corresponds to `seed` argument in
 #' `missRanger` and relevant only when `impute_missing = TRUE`.
+#' @param verbose Whether to print progress to console.
 #' @export
 
 train_test_separation <- function(df,
@@ -35,16 +36,17 @@ train_test_separation <- function(df,
                                   max_iter = 10,
                                   num_trees = 500,
                                   pmm_k = 5,
-                                  imp_seed){
+                                  imp_seed,
+                                  verbose = verbose){
 
     # save chosen specs
   if (impute_missing == FALSE){
     specs <- c(train_prop, random_seed, impute_missing)
     names(specs) = c('train_prop', 'random_seed', 'impute_missing')
   } else if (impute_missing == TRUE){
-    specs <- c(train_prop, random_seed, impute_missing,
+    specs <- c(train_prop, random_seed, impute_missing, list(exclude_vars),
                imp_threads, max_iter, num_trees, pmm_k, imp_seed)
-    names(specs) = c('train_prop', 'random_seed', 'impute_missing',
+    names(specs) = c('train_prop', 'random_seed', 'impute_missing', 'exclude_vars',
                      'imp_threads', 'max_iter', 'num_trees', 'pmm_k', 'imp_seed')
   }
 
@@ -85,7 +87,8 @@ train_test_separation <- function(df,
                                         num.threads = imp_threads,
                                         maxiter = max_iter,
                                         data_only = FALSE,
-                                        seed = imp_seed)
+                                        seed = imp_seed,
+                                        verbose = verbose)
 
     imp_test <- missRanger::missRanger(data = test_set,
                                        formula = imp_formula,
@@ -94,12 +97,13 @@ train_test_separation <- function(df,
                                        num.threads = imp_threads,
                                        maxiter = max_iter,
                                        data_only = FALSE,
-                                       seed = imp_seed)
+                                       seed = imp_seed,
+                                       verbose = verbose)
     # create list of relevant objects to return
     return_object <- list(imp_train, train_ids, train_indices,
                           imp_test, test_ids, test_indices, specs)
-    names(return_object) <- c('train_set_imputed', 'train_ids', 'train_indices',
-                              'test_set_imputed', 'test_ids', 'test_indices',
+    names(return_object) <- c('train_set', 'train_ids', 'train_indices',
+                              'test_set', 'test_ids', 'test_indices',
                               'specs')
 
   } else if (impute_missing == FALSE){

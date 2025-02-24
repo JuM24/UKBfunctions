@@ -14,7 +14,8 @@ train_test_separation(
   max_iter = 10,
   num_trees = 500,
   pmm_k = 5,
-  imp_seed
+  imp_seed,
+  verbose = verbose
 )
 }
 \arguments{
@@ -49,6 +50,8 @@ imputation; corresponds to \code{pmm.k} argument in \code{missRanger} and releva
 
 \item{imp_seed}{Seed for the imputation; corresponds to \code{seed} argument in
 \code{missRanger} and relevant only when \code{impute_missing = TRUE}.}
+
+\item{verbose}{Whether to print progress to console.}
 }
 \description{
 \code{train_test_separation} takes a data frame with all features required for
