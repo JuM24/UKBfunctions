@@ -100,7 +100,7 @@ correct_balance <- function(df,
 
     # if a variable was not in the pre-SMOTE df, it means it was dummy-coded
     # and must be a nominal variable
-    categ_vars <- numeric_vars[!numeric_vars %in% colnames(df_new)]
+    categ_vars <- numeric_vars[!numeric_vars %in% colnames(df)]
 
     # categorical variables were assigned values that might not exist;
     # we have to round them to get plausible values

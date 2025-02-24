@@ -38,11 +38,12 @@ corresponds to the argument \code{number} in \code{caret::trainControl}.}
 parallel.}
 
 \item{core_number}{Relevant only if \code{distribute_cores = TRUE}. The number of
-cores to be used in parallel processing.
-#' @param random_seed Random seed used in 1. balance adjustment, 2. registering
-doRNG for reproducible parallel processing, and 3. generation of further
-seeds to be used in the generation of the cross-validation folds and of the
-tuning grid - argument \code{seeds} in \code{caret::trainControl}.}
+cores to be used in parallel processing.}
+
+\item{random_seed}{Random seed used in 1. balance adjustment, and in the
+generation of further seeds to be used in the creationg of the
+cross-validation folds and of the tuning grid - argument \code{seeds} in
+\code{caret::trainControl}.}
 
 \item{verbose}{Whether to print progress to console.}
 }

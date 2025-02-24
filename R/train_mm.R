@@ -16,10 +16,10 @@
 #' parallel.
 #' @param core_number Relevant only if `distribute_cores = TRUE`. The number of
 #' cores to be used in parallel processing.
-#' #' @param random_seed Random seed used in 1. balance adjustment, 2. registering
-#' doRNG for reproducible parallel processing, and 3. generation of further
-#' seeds to be used in the generation of the cross-validation folds and of the
-#' tuning grid - argument `seeds` in `caret::trainControl`.
+#' @param random_seed Random seed used in 1. balance adjustment, and in the
+#' generation of further seeds to be used in the creationg of the
+#' cross-validation folds and of the tuning grid - argument `seeds` in
+#' `caret::trainControl`.
 #' @param verbose Whether to print progress to console.
 #' @export
 
