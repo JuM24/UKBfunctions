@@ -11,6 +11,7 @@ prep_train_mm(
   extra_suffix,
   mm_source,
   target_var,
+  train_features,
   max_followup,
   min_age,
   imbalance_correct,
