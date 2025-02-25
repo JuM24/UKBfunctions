@@ -7,6 +7,9 @@
 #' @param input_file_path The directory name from which to load the input file.
 #' @param output_file_path The directory name into which the output file
 #' is to be saved.
+#' @param extra_suffix An optional extra suffix to be added to the output file;
+#' by default, the MM source and target variable are already in the name to
+#' prevent accidental overwrites during export.
 #' @param mm_source The source of disease history.
 #' @param target_var The target variable to be predicted.
 #' @param max_followup The time within which the outcome that is to be
@@ -39,6 +42,7 @@
 
 prep_train_mm <- function(input_file_path = '',
                           output_file_path = '',
+                          extra_suffix,
                           mm_source,
                           target_var,
                           max_followup,
@@ -101,6 +105,6 @@ prep_train_mm <- function(input_file_path = '',
 
   # save to disk
   saveRDS(output_object, paste0(output_file_path, mm_source, '_trained_',
-                                target_var, '.Rds'))
+                                target_var, extra_suffix, '.Rds'))
   return(output_object)
 }

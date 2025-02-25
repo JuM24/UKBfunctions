@@ -8,6 +8,7 @@ be used with multimorbidity predictors.}
 prep_train_mm(
   input_file_path = "",
   output_file_path = "",
+  extra_suffix,
   mm_source,
   target_var,
   max_followup,
@@ -30,6 +31,10 @@ prep_train_mm(
 
 \item{output_file_path}{The directory name into which the output file
 is to be saved.}
+
+\item{extra_suffix}{An optional extra suffix to be added to the output file;
+by default, the MM source and target variable are already in the name to
+prevent accidental overwrites during export.}
 
 \item{mm_source}{The source of disease history.}
 
