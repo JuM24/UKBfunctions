@@ -48,6 +48,7 @@ correct_balance <- function(df,
 
   # implement SMOTE to increase sample size of minority class
   if (is.null(approach)){
+    set.seed(random_seed)
     return(df)
 
   } else if (approach == 'SMOTE'){
