@@ -17,7 +17,7 @@ prep_train_mm(
   imbalance_correct,
   balance_prop,
   ordinals,
-  smote_k,
+  smote_K,
   train_algorithm,
   train_metric,
   train_cv_folds,
@@ -61,6 +61,8 @@ the ordinal variables in the data frame. All character/factor columns
 not included in this list will be considered as nominal variables, and
 all numerical variables as numerical.}
 
+\item{smote_K}{Relevant for SMOTE. The number of nearest neighbours for KNN.}
+
 \item{train_algorithm}{The algorithm to be used for prediction.}
 
 \item{train_metric}{Which metric to optimise on. Available options are
@@ -81,8 +83,6 @@ cores to be used in parallel processing.}
 \item{verbose}{Whether to print progress to console.}
 
 \item{random_seed}{Random seed for imbalance correction and cross-validation.}
-
-\item{smote_K}{Relevant for SMOTE. The number of nearest neighbours for KNN.}
 }
 \description{
 \code{prep_train_mm} Takes the path to the R object that resulted from the
