@@ -103,8 +103,5 @@ train_mm <- function(df,
     plan(sequential)
   }
 
-  return_object <- list(model_trained, specs)
-  names(return_object) <- c('model_trained', 'specs')
-
-  return(return_object)
+  return(model_trained)
 }
