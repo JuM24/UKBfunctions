@@ -28,6 +28,8 @@
 #' all numerical variables as numerical.
 #' @param smote_K Relevant for SMOTE. The number of nearest neighbours for KNN.
 #' @param train_algorithm The algorithm to be used for prediction.
+#' @param train_metric Which metric to optimise on. Available options are
+#' "Accuracy", "Kappa", "ROC", "Sens", and "Spec".
 #' @param train_cv_folds The number of folds to be used during cross-validation;
 #' corresponds to the argument `number` in `caret::trainControl`.
 #' @param train_tune_len The length of the tuning grid; corresponds to the
@@ -52,6 +54,7 @@ prep_train_mm <- function(input_file_path = '',
                           ordinals,
                           smote_k,
                           train_algorithm,
+                          train_metric,
                           train_cv_folds,
                           train_tune_len,
                           train_distribute_cores,

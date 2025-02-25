@@ -18,6 +18,7 @@ prep_train_mm(
   ordinals,
   smote_k,
   train_algorithm,
+  train_metric,
   train_cv_folds,
   train_tune_len,
   train_distribute_cores,
@@ -60,6 +61,9 @@ not included in this list will be considered as nominal variables, and
 all numerical variables as numerical.}
 
 \item{train_algorithm}{The algorithm to be used for prediction.}
+
+\item{train_metric}{Which metric to optimise on. Available options are
+"Accuracy", "Kappa", "ROC", "Sens", and "Spec".}
 
 \item{train_cv_folds}{The number of folds to be used during cross-validation;
 corresponds to the argument \code{number} in \code{caret::trainControl}.}
