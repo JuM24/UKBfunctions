@@ -53,10 +53,26 @@ train_mm <- function(df,
   formula <- as.formula(paste0(target_var, ' ~ ', preds))
 
   # cross-validation specification
-  ctrl <- caret::trainControl(method = 'cv', number = cv_folds,
-                              verboseIter = verbose, search = 'random',
-                              seeds = random_seeds, classProbs = TRUE,
-                              summaryFunction = caret::twoClassSummary)
+  if (train_metric %in% c('Sens', 'Spec', 'ROC')) {
+    ctrl <- trainControl(
+      method = 'cv',
+      number = cv_folds,
+      verboseIter = verbose,
+      search = 'random',
+      seeds = random_seeds,
+      classProbs = TRUE,
+      summaryFunction = caret::twoClassSummary)
+
+  } else {  # 'Kappa' or 'Accuracy'
+    ctrl <- trainControl(
+      method = 'cv',
+      number = cv_folds,
+      verboseIter = verbose,
+      search = 'random',
+      seeds = random_seeds,
+      classProbs = FALSE)
+  }
+
   df[[target_var]] <- as.character(df[[target_var]])
   df[[target_var]] <- as.factor(ifelse(df[[target_var]] == '0', 'non_case', 'case'))
 
