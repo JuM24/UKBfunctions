@@ -117,7 +117,7 @@ prep_to_train <- function(train_set,
       filter(asc_age >= min_age)
     if (verbose == TRUE){
       print(paste0('Removed participants younger than ',
-                   as.character(round(age_mean_train, 2)), ' years',
+                   as.character(min_age), ' years',
                    ': ', as.character(old_nrow_train - nrow(train_set)),
                    ' in the training set and ',
                    as.character(old_nrow_test - nrow(test_set)),
