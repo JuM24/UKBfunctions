@@ -54,7 +54,7 @@ train_mm <- function(df,
 
   # cross-validation specification
   if (train_metric %in% c('Sens', 'Spec', 'ROC')) {
-    ctrl <- trainControl(
+    ctrl <- caret::trainControl(
       method = 'cv',
       number = cv_folds,
       verboseIter = verbose,
@@ -64,7 +64,7 @@ train_mm <- function(df,
       summaryFunction = caret::twoClassSummary)
 
   } else {  # 'Kappa' or 'Accuracy'
-    ctrl <- trainControl(
+    ctrl <- caret::trainControl(
       method = 'cv',
       number = cv_folds,
       verboseIter = verbose,
