@@ -103,7 +103,7 @@ prep_train_mm <- function(input_file_path = '',
                                         verbose = verbose)
 
   # combine the output with the preparation specs
-  output_object <- list(model_train, train_set, test_set, list(df_prep$specs))
+  output_object <- list(model_train, train_set, test_set, list(object_prep$specs))
   names(output_object) <- c('model', 'train_set', 'test_set', 'specs')
 
   # save to disk
