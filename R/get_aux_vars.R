@@ -25,7 +25,8 @@ get_aux_vars <- function(df){
                      'X31.', 'X21002.0.0', 'X50.0.0',
                      'X6138.0', 'X189.', 'X6164.0', 'X1558.0.0',
                      'X709.0.0', 'X1031.0.0', 'X6160.0.0', 'X5201.0.0',
-                     'X5208.0.0', 'X3731.0.0', 'X22040.0.0')
+                     'X5208.0.0', 'X3731.0.0', 'X22040.0.0',
+                     'rs429358', 'rs7412')
 
   aux_vars <- df %>%
     select(id, starts_with(aux_vars_list)) %>%
@@ -167,7 +168,7 @@ get_aux_vars <- function(df){
     select(-c(starts_with('X'))) %>%
     mutate(across(c('ProsMem_0', 'sex', 'alcohol_0', 'alcohol_ex', 'leisure_0',
                     'education_0', 'phys_act', 'visits_0', 'lonely_0',
-                    'id'),
+                    'id', 'rs429358', 'rs7412'),
                   as.factor)) %>%
     inner_join(fam_ill, by = 'id')
 
