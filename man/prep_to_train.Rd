@@ -12,6 +12,7 @@ prep_to_train(
   amend_features = FALSE,
   max_followup = NULL,
   imbalance_correct = NULL,
+  remove_vars = NULL,
   min_age = NULL,
   balance_prop,
   random_seed,
@@ -37,6 +38,9 @@ and right-censoring or event occurrence, whichever occurs first.}
 
 \item{imbalance_correct}{Whether imbalance correction should be performed.
 Either \code{NULL}, \code{'SMOTE'} or \code{'downsample'}.}
+
+\item{remove_vars}{A list of column names that should be removed prior to
+balance correction. Especially useful for SMOTE.}
 
 \item{min_age}{The minimum age of the sample. Determines whether participants
 below a certain age should be dropped prior to training.}

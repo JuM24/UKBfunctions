@@ -15,6 +15,7 @@ prep_train_mm(
   max_followup,
   min_age,
   imbalance_correct,
+  remove_vars,
   balance_prop,
   ordinals,
   smote_K,
@@ -52,6 +53,9 @@ below a certain age should be dropped prior to training.}
 
 \item{imbalance_correct}{The desired proportion of the total for the
 current minority class. 0.5 will completely balance the classes.}
+
+\item{remove_vars}{A list of column names that should be removed prior to
+balance correction. Especially useful for SMOTE.}
 
 \item{balance_prop}{The desired proportion of the total for the
 current minority class. 0.5 will completely balance the classes.}

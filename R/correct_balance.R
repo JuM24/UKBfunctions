@@ -26,7 +26,7 @@
 
 correct_balance <- function(df,
                             target_var,
-                            remove_vars <- NULL,
+                            remove_vars = NULL,
                             approach = NULL,
                             balance_prop = 0.5,
                             random_seed,

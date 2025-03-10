@@ -7,6 +7,7 @@
 correct_balance(
   df,
   target_var,
+  remove_vars = NULL,
   approach = NULL,
   balance_prop = 0.5,
   random_seed,
@@ -21,6 +22,9 @@ correct_balance(
 
 \item{target_var}{The target variable for which the class imbalance should be
 corrected.}
+
+\item{remove_vars}{A list of column names that should be removed prior to
+balance correction. Especially useful for SMOTE.}
 
 \item{approach}{The approach by which class imbalance should be corrected.
 The possible choices are 'downsample' and 'SMOTE'.}
