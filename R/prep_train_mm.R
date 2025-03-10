@@ -20,6 +20,8 @@
 #' below a certain age should be dropped prior to training.
 #' @param imbalance_correct The desired proportion of the total for the
 #' current minority class. 0.5 will completely balance the classes.
+#' @param remove_vars A list of column names that should be removed prior to
+#' balance correction. Especially useful for SMOTE.
 #' @param balance_prop The desired proportion of the total for the
 #' current minority class. 0.5 will completely balance the classes.
 #' @param ordinals Relevant for SMOTE. A list of column names indicating
@@ -51,6 +53,7 @@ prep_train_mm <- function(input_file_path = '',
                           max_followup,
                           min_age,
                           imbalance_correct,
+                          remove_vars,
                           balance_prop,
                           ordinals,
                           smote_K,

@@ -37,7 +37,10 @@ create_mm_masterfile <- function(df,
                                          as.character(df$X34.0.0)),
                                   format = '%d/%m/%Y')
 
-
+  # import self-report disease codes
+  mm_codes <- read.csv(mm_codes_file) %>%
+    filter(!is.na(code)) %>%
+    mutate(code = as.character(code))
 
 
   if (mm_source == 'self_report'){
@@ -54,10 +57,6 @@ create_mm_masterfile <- function(df,
 
     ## categories 20001 and 20002
 
-    # import self-report disease codes
-    mm_codes <- read.csv(mm_codes_file) %>%
-      filter(!is.na(code)) %>%
-      mutate(code = as.character(code))
     # non-cancer self-report disorders from category 20002
     dis_self <- create_diseases_self(df = df,
                                      mm_codes = mm_codes,
@@ -215,6 +214,76 @@ create_mm_masterfile <- function(df,
     return(dis_self)
 
   } else if (source == 'inpatient'){
-    # TODO
+
+    # select the inpatient field codes (as seen in GitHub: XX)
+    diagnoses <- main_vars %>%
+      select(id, starts_with(c('X41270.', 'X41271.', 'X41280.', 'X41281.')))
+
+    diagnoses[diagnoses=='']  <- NA
+    diagnoses <- as.data.frame(sapply(diagnoses, as.character))
+
+    # separate sources of diagnoses (ICD9 vs 10) and dates vs. diagnosis codes
+    icd9 <- diagnoses %>% select(c('id', starts_with('X41271')))
+    icd9_date <- diagnoses %>% select(c('id', starts_with('X41281')))
+    icd10 <- diagnoses %>% select(c('id', starts_with('X41270')))
+    icd10_date <- diagnoses %>% select(c('id', starts_with('X41280')))
+
+    # keep only rows without NAs
+    icd9 <- icd9[rowSums(is.na(icd9))!=ncol(icd9)-1,]
+    icd9_date <- icd9_date[rowSums(is.na(icd9_date))!=ncol(icd9_date)-1,]
+    icd10 <- icd10[rowSums(is.na(icd10))!=ncol(icd10)-1,]
+    icd10_date <- icd10_date[rowSums(is.na(icd10_date))!=ncol(icd10_date)-1,]
+
+    # transform to long-type format
+    icd9_long <- icd9 %>%  pivot_longer(-id, names_to = 'code',
+                                        values_drop_na=TRUE)
+    colnames(icd9_long) <- c('id', 'column', 'code')
+    icd9_long$column <- sub('X41271.', '', icd9_long$column)
+
+    icd9_date_long <- icd9_date %>%  pivot_longer(-id, names_to = 'code',
+                                                  values_drop_na=TRUE)
+    colnames(icd9_date_long) <- c('id', 'column', 'date')
+    icd9_date_long$column <- sub('X41281.', '', icd9_date_long$column)
+
+    icd10_long <- icd10 %>%  pivot_longer(-id, names_to = 'code',
+                                          values_drop_na=TRUE)
+    colnames(icd10_long) <- c('id', 'column', 'code')
+    icd10_long$column <- sub('X41270.', '', icd10_long$column)
+
+    icd10_date_long <- icd10_date %>%  pivot_longer(-id, names_to = 'code',
+                                                    values_drop_na=TRUE)
+    colnames(icd10_date_long) <- c('id', 'column', 'date')
+    icd10_date_long$column <- sub('X41280.', '', icd10_date_long$column)
+
+    # combine all diagnoses
+    icd9 <- merge(icd9_long, icd9_date_long, by = c('id', 'column'))
+    icd9$column <- NULL; icd9$version <- 'icd9'
+    icd10 <- merge(icd10_long, icd10_date_long, by = c('id', 'column'))
+    icd10$column <- NULL; icd10$version <- 'icd10'
+
+    ## ICD-10: just keep diagnoses from the MM list
+    # regular expression to match only codes starting with those in `mm_codes$code`
+    icd10$mm_code <- NA
+    for (current_code in mm_codes$code) {
+      matches <- grepl(paste0('^', current_code), icd10$code)
+      icd10$mm_code[matches] <- current_code
+    }
+    # just keep found codes
+    icd10_filtered <- icd10 %>%
+      filter(!is.na(mm_code))
+    # merge with the code descriptions
+    icd10_filtered <- merge(icd10_filtered, mm_codes,
+                            by.x = 'mm_code', by.y = 'code',
+                            all = TRUE)
+    # TODO: WHEN THIS IS DONE:
+    # - keep the long format because we cannot yet know which date we will need
+    #
+
+    ## ICD-9: use conversion table and then repeat as above for ICD-10
+    conv_tbl <- read.csv('D://Job/Projects/Tom_Lucy/disease_codes/icd9_10.csv')
+    conv_tbl <- conv_tbl[grepl(code_pattern, conv_tbl$ICD10), ]
+    conv_tbl <- conv_tbl[conv_tbl$ICD9 != 'UNDEF', ]
+    icd9_filtered <- icd9 %>%
+      filter(diagnosis %in% conv_tbl$ICD9)
   }
 }

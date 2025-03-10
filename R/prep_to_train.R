@@ -14,6 +14,8 @@
 #' and right-censoring or event occurrence, whichever occurs first.
 #' @param imbalance_correct Whether imbalance correction should be performed.
 #' Either `NULL`, `'SMOTE'` or `'downsample'`.
+#' @param remove_vars A list of column names that should be removed prior to
+#' balance correction. Especially useful for SMOTE.
 #' @param min_age The minimum age of the sample. Determines whether participants
 #' below a certain age should be dropped prior to training.
 #' @param balance_prop Only relevant if `imbalance_correct = 'SMOTE'`. The
@@ -32,6 +34,7 @@ prep_to_train <- function(train_set,
                           amend_features = FALSE,
                           max_followup = NULL,
                           imbalance_correct = NULL,
+                          remove_vars = NULL,
                           min_age = NULL,
                           balance_prop,
                           random_seed,
@@ -95,9 +98,10 @@ prep_to_train <- function(train_set,
   age_sd_train <- sd(train_set$asc_age, na.rm = TRUE)
 
   # potentially correct class imbalance in the training set
-  train_set <- UKBfunctions::correct_balance(df = (train_set %>% select(-target_time)),
+  train_set <- UKBfunctions::correct_balance(df = train_set,
                                              target_var = target_var,
                                              approach = imbalance_correct,
+                                             remove_vars = remove_vars,
                                              balance_prop = balance_prop,
                                              random_seed = random_seed,
                                              verbose = verbose,
