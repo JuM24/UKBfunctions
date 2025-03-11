@@ -356,8 +356,10 @@ create_mm_masterfile <- function(df,
       pivot_wider(names_from = disorder,
                   values_from = value,
                   values_fill = list(value = 0)) %>%
-      select(-`NA`)
+      select(-`NA`) %>%
+      mutate(across(everything(), as.factor)) %>%
+      as.data.frame()
   }
 
-  return(as.data.frame(icd_all_wide))
+  return(icd_all_wide)
 }
