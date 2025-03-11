@@ -53,7 +53,7 @@ prep_train_mm <- function(input_file_path = '',
                           max_followup,
                           min_age,
                           imbalance_correct,
-                          remove_vars,
+                          remove_vars = NULL,
                           balance_prop,
                           ordinals,
                           smote_K,
@@ -70,12 +70,6 @@ prep_train_mm <- function(input_file_path = '',
   train_test <- readRDS(paste0(input_file_path, mm_source, '_split_', target_var, '.Rds'))
   train_set <- train_test$train_set
   test_set <- train_test$test_set
-
-  # remove redundant variables
-  train_set <- train_set %>%
-    select(-c(asc_date, censor_date, target_date))
-  test_set <- test_set %>%
-    select(-c(asc_date, censor_date, target_date))
 
   # prepare the data for training
   amend_features = ifelse(mm_source == 'self_report', TRUE, FALSE)
