@@ -66,20 +66,21 @@ train_test_separation <- function(df,
   test_set <- df %>%
     filter(id %in% test_ids)
 
-  # remove constants
-  train_set <- train_set[, sapply(train_set, function(x) length(unique(x))) > 1]
-  test_set <- test_set[, sapply(test_set, function(x) length(unique(x))) > 1]
-
-  # determine the imputation formula
-  if (!is.null(exclude_vars) && length(exclude_vars) > 0) {
-    exclude_str <- paste(exclude_vars, collapse = ' - ')
-    imp_formula <- as.formula(paste0('( . - ', exclude_str, ') ~ ( . - ', exclude_str, ')'))
-  } else {
-    # Use the default formula
-    imp_formula <- as.formula('. ~ .')
-  }
-
   if (impute_missing == TRUE){
+
+    # remove constants
+    train_set <- train_set[, sapply(train_set, function(x) length(unique(x))) > 1]
+    test_set <- test_set[, sapply(test_set, function(x) length(unique(x))) > 1]
+
+    # determine the imputation formula
+    if (!is.null(exclude_vars) && length(exclude_vars) > 0) {
+      exclude_str <- paste(exclude_vars, collapse = ' - ')
+      imp_formula <- as.formula(paste0('( . - ', exclude_str, ') ~ ( . - ', exclude_str, ')'))
+    } else {
+      # Use the default formula
+      imp_formula <- as.formula('. ~ .')
+    }
+
     imp_train <- missRanger::missRanger(data = train_set,
                                         formula = imp_formula,
                                         pmm.k = pmm_k,
