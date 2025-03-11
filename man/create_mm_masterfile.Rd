@@ -4,10 +4,20 @@
 \alias{create_mm_masterfile}
 \title{Create the MM data frame}
 \usage{
-create_mm_masterfile(df, mm_source, mm_codes_file, random_seed = 24)
+create_mm_masterfile(
+  df,
+  time_zero = NULL,
+  mm_source,
+  mm_codes_file,
+  random_seed = 24
+)
 }
 \arguments{
 \item{df}{The input data frame.}
+
+\item{time_zero}{The date at which the diagnoses are to be ascertained; the
+required format is '\%d/\%m/\%Y' If \code{NULL}, or when \verb{mm_source = 'self_report},
+\code{time_zero} is set to the date of the UKB baseline assessment.}
 
 \item{mm_source}{The source of disease history.}
 

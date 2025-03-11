@@ -4,13 +4,19 @@
 #' returns a data frame with participants as rows and binary indicators for
 #' each disorder as columns.
 #' @param df The input data frame.
+#' @param time_zero The date at which the diagnoses are to be ascertained; the
+#' required format is '%d/%m/%Y' If `NULL`, or when `mm_source = 'self_report`,
+#' `time_zero` is set to the date of the UKB baseline assessment.
 #' @param mm_source The source of disease history.
+#' @param conv_table The path to the ICD10/ICD9 conversion table.
 #' @param mm_codes_file The path to the codes for each MM.
 #' @param random_seed The number of `set.seed`.
 #' @export
 
 create_mm_masterfile <- function(df,
+                                 time_zero = NULL,
                                  mm_source,
+                                 conv_table,
                                  mm_codes_file,
                                  random_seed = 24){
 
@@ -274,16 +280,84 @@ create_mm_masterfile <- function(df,
     # merge with the code descriptions
     icd10_filtered <- merge(icd10_filtered, mm_codes,
                             by.x = 'mm_code', by.y = 'code',
-                            all = TRUE)
-    # TODO: WHEN THIS IS DONE:
-    # - keep the long format because we cannot yet know which date we will need
-    #
+                            all.x = TRUE) %>%
+      rename(diag_date = date) %>%
+      mutate(diag_date = as.Date(diag_date, format = '%Y-%m-%d')) %>%
+      select(id, diag_date, disorder)
 
-    ## ICD-9: use conversion table and then repeat as above for ICD-10
-    conv_tbl <- read.csv('D://Job/Projects/Tom_Lucy/disease_codes/icd9_10.csv')
-    conv_tbl <- conv_tbl[grepl(code_pattern, conv_tbl$ICD10), ]
+
+    ## ICD-9: use conversion table to convert from ICD10 to ICD9
+    conv_tbl <- read.csv(conv_table)
     conv_tbl <- conv_tbl[conv_tbl$ICD9 != 'UNDEF', ]
+    # identify equivalent ICD9 codes in the conversion table
+    conv_tbl$mm_code <- NA
+    for (current_code in mm_codes$code){
+      matches <- grepl(paste0('^', current_code), conv_tbl$ICD10)
+      conv_tbl$mm_code[matches] <- current_code
+    }
+    # combine the diagnoses with the conversion table
+    conv_tbl <- conv_tbl %>%
+      filter(!is.na(mm_code)) %>%
+      distinct(ICD9, .keep_all = TRUE)
     icd9_filtered <- icd9 %>%
-      filter(diagnosis %in% conv_tbl$ICD9)
+      filter(code %in% conv_tbl$ICD9) %>%
+      left_join(conv_tbl, join_by(code == ICD9))
+    # combine the diagnoses with the MM data frame
+    icd9_filtered <- merge(icd9_filtered, mm_codes,
+                           by.x = 'mm_code', by.y = 'code',
+                           all.x = TRUE) %>%
+      rename(diag_date = date) %>%
+      mutate(diag_date = as.Date(diag_date, format = '%Y-%m-%d')) %>%
+      select(id, diag_date, disorder)
+
+
+    ## Combine both sources of diagnoses and keep just the ones before time zero
+    icd_all <- rbind(icd9_filtered, icd10_filtered)
+
+    # determine time zero - set diagnoses after time zero to non-cases
+    if (is.null(time_zero)){
+      icd_all <- merge(icd_all, select(df, c(id, X53.0.0, birth_date)),
+                       by = 'id', all.y = TRUE) %>%
+        rename(asc_date = X53.0.0) %>%
+        mutate(asc_date = as.Date(asc_date, format = '%Y-%m-%d'))
+      icd_all$disorder[icd_all$diag_date >= icd_all$asc_date] <- NA
+      icd_all$diag_date[icd_all$diag_date >= icd_all$asc_date] <- NA
+      # calculate age at ascertainment
+      icd_all$asc_age <- as.numeric(difftime(icd_all$asc_date,
+                                             icd_all$birth_date,
+                                             units = 'days'))/365.25
+    } else {
+      time_zero <- as.Date(time_zero, format = '%d/%m/%Y')
+      if (is.na(time_zero)){
+        stop('Error: the date of time zero is not in the expected format.')
+      }
+      icd_all <- merge(icd_all, select(df, c(id, birth_date)),
+                       by = 'id', all.y = TRUE)
+      icd_all$disorder[icd_all$diag_date >= time_zero] <- NA
+      icd_all$diag_date[icd_all$diag_date >= time_zero] <- NA
+      # calculate age at ascertainment
+      icd_all$asc_age <- as.numeric(difftime(time_zero,
+                                             icd_all$birth_date,
+                                             units = 'days'))/365.25
+    }
+
+    # remove duplicate instance of disorder per id by keeping first instance
+    icd_all <- icd_all %>%
+      arrange(diag_date) %>%
+      distinct(id, disorder, .keep_all = TRUE)
+
+    # transform to wide format
+    icd_all_wide <- icd_all %>%
+      select(id, disorder, asc_date, asc_age) %>%
+      # Create an indicator variable that is 1 for each occurrence.
+      mutate(value = 1) %>%
+
+      # each unique disorder becomes a column.
+      pivot_wider(names_from = disorder,
+                  values_from = value,
+                  values_fill = list(value = 0)) %>%
+      select(-`NA`)
   }
+
+  return(icd_all_wide)
 }
