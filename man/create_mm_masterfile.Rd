@@ -8,6 +8,7 @@ create_mm_masterfile(
   df,
   time_zero = NULL,
   mm_source,
+  conv_table,
   mm_codes_file,
   random_seed = 24
 )
@@ -20,6 +21,8 @@ required format is '\%d/\%m/\%Y' If \code{NULL}, or when \verb{mm_source = 'self
 \code{time_zero} is set to the date of the UKB baseline assessment.}
 
 \item{mm_source}{The source of disease history.}
+
+\item{conv_table}{The path to the ICD10/ICD9 conversion table.}
 
 \item{mm_codes_file}{The path to the codes for each MM.}
 

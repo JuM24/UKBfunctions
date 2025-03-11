@@ -11,6 +11,7 @@ prep_to_train(
   target_var,
   amend_features = FALSE,
   max_followup = NULL,
+  remove_censored = FALSE,
   imbalance_correct = NULL,
   remove_vars = NULL,
   min_age = NULL,
@@ -35,6 +36,10 @@ self-report data.}
 predicted should occur. If not set to \code{NULL}, the input data frame must
 contain a column called 'followup' which is the time in years between baseline
 and right-censoring or event occurrence, whichever occurs first.}
+
+\item{remove_censored}{Whether participants that were lost to follow-up
+before max_followup should be removed. Assumes the presence of the columns
+\code{asc_date} and \code{censor_date} in the data frame.}
 
 \item{imbalance_correct}{Whether imbalance correction should be performed.
 Either \code{NULL}, \code{'SMOTE'} or \code{'downsample'}.}

@@ -15,7 +15,7 @@ prep_train_mm(
   max_followup,
   min_age,
   imbalance_correct,
-  remove_vars,
+  remove_vars = NULL,
   balance_prop,
   ordinals,
   smote_K,
