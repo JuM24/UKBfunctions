@@ -12,6 +12,9 @@
 #' predicted should occur. If not set to `NULL`, the input data frame must
 #' contain a column called 'followup' which is the time in years between baseline
 #' and right-censoring or event occurrence, whichever occurs first.
+#' @param remove_censored Whether participants that were lost to follow-up
+#' before max_followup should be removed. Assumes the presence of the columns
+#' `asc_date` and `censor_date` in the data frame.
 #' @param imbalance_correct Whether imbalance correction should be performed.
 #' Either `NULL`, `'SMOTE'` or `'downsample'`.
 #' @param remove_vars A list of column names that should be removed prior to
@@ -33,6 +36,7 @@ prep_to_train <- function(train_set,
                           target_var,
                           amend_features = FALSE,
                           max_followup = NULL,
+                          remove_censored = FALSE,
                           imbalance_correct = NULL,
                           remove_vars = NULL,
                           min_age = NULL,
@@ -42,24 +46,52 @@ prep_to_train <- function(train_set,
                           smote_K,
                           verbose = verbose){
 
+  # potentially remove participants with loss to follow-up before max_followup
+  if (remove_censored == TRUE){
+    old_nrow_train <- nrow(train_set)
+    old_nrow_test <- nrow(test_set)
+    train_set <- train_set %>%
+      filter(as.numeric(difftime(censor_date, asc_date, units = 'days')/365.25) >= max_followup)
+    test_set <- test_set %>%
+      filter(as.numeric(difftime(censor_date, asc_date, units = 'days')/365.25) >= max_followup)
+    print(paste0('Removed participants with loss to follow-up within ',
+          as.character(max_followup), ' years of time 0: ',
+          as.character(old_nrow_train - nrow(train_set)), ' in the training set and ',
+          as.character(old_nrow_test - nrow(test_set)), ' in the test set.'))
+  } else if (remove_censored == FALSE){
+    retained_train <- train_set %>%
+      filter(as.numeric(difftime(censor_date, asc_date, units = 'days')/365.25) < max_followup) %>%
+      nrow(.) %>%
+      as.character(.)
+    retained_test <- test_set %>%
+      filter(as.numeric(difftime(censor_date, asc_date, units = 'days')/365.25) < max_followup) %>%
+      nrow(.) %>%
+      as.character(.)
+    warning('Some participants were censored before the maximum follow-up of ',
+            as.character(max_followup), ' years: ', retained_train, ' in
+            the training set and ', retained_test, ' in the test set.')
+  }
 
   if (!is.null(imbalance_correct)){
     if(imbalance_correct == 'SMOTE'){
-      specs <- c(amend_features, min_age, max_followup, random_seed,
+      specs <- c(remove_censored, amend_features, min_age, max_followup, random_seed,
                  imbalance_correct, balance_prop, smote_K, list(ordinals))
 
-      names(specs) = c('amend_features', 'min_age', 'max_followup', 'random_seed',
+      names(specs) = c('remove_censored', 'amend_features', 'min_age',
+                       'max_followup', 'random_seed',
                        'imbalance_correct', 'balance_prop', 'smote_K', 'ordinals')
 
     } else if (imbalance_correct == 'downsample'){
-      specs <- c(amend_features, min_age, max_followup, random_seed,
+      specs <- c(remove_censored, amend_features, min_age, max_followup, random_seed,
                  imbalance_correct, balance_prop)
-      names(specs) = c('amend_features', 'min_age', 'max_followup', 'random_seed',
+      names(specs) = c('remove_censored', 'amend_features', 'min_age',
+                       'max_followup', 'random_seed',
                        'imbalance_correct', 'balance_prop')
     }
   } else if (is.null(imbalance_correct)){
-    specs <- c(amend_features, min_age, max_followup, random_seed)
-    names(specs) = c('amend_features', 'min_age', 'max_followup', 'random_seed')
+    specs <- c(remove_censored, amend_features, min_age, max_followup, random_seed)
+    names(specs) = c('remove_censored', 'amend_features', 'min_age',
+                     'max_followup', 'random_seed')
 
   }
 
