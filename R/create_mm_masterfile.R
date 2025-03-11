@@ -16,7 +16,7 @@
 create_mm_masterfile <- function(df,
                                  time_zero = NULL,
                                  mm_source,
-                                 conv_table,
+                                 conv_table = NULL,
                                  mm_codes_file,
                                  random_seed = 24){
 
@@ -219,7 +219,7 @@ create_mm_masterfile <- function(df,
 
     return(dis_self)
 
-  } else if (source == 'inpatient'){
+  } else if (mm_source == 'inpatient'){
 
     # select the inpatient field codes (as seen in GitHub: XX)
     diagnoses <- main_vars %>%
