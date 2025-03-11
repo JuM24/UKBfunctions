@@ -8,7 +8,7 @@ create_mm_masterfile(
   df,
   time_zero = NULL,
   mm_source,
-  conv_table,
+  conv_table = NULL,
   mm_codes_file,
   random_seed = 24
 )
