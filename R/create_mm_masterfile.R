@@ -357,7 +357,7 @@ create_mm_masterfile <- function(df,
                   values_from = value,
                   values_fill = list(value = 0)) %>%
       select(-`NA`) %>%
-      mutate(across(everything(), as.factor)) %>%
+      mutate(across(-all_of(c('asc_date', 'asc_age')), as.factor)) %>%
       as.data.frame()
   }
 
