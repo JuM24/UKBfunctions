@@ -47,19 +47,19 @@ get_data_provider <- function(df,
 
   # those with just one data provider throughout the entire period
   inpatient_constant <- inpatient_source %>%
-    filter(!id %in% multi_source$id) %>%
+    filter(!id %in% multi_source$eid) %>%
     rename(data_provider = X40022.0.0) %>%
     select(id, data_provider)
 
   # those with several data providers
   inpatient_flux_freq <- diagnoses_dates %>%
-    filter(id %in% multi_source$id) %>% # just resolve those with several data providers
-    group_by(id, dsource) %>% # group by data provider and id
+    filter(eid %in% multi_source$eid) %>% # just resolve those with several data providers
+    group_by(eid, dsource) %>% # group by data provider and id
     summarise(count = n()) %>% # count number of instances for id-source combo
     ungroup() %>%
     arrange(desc(count)) %>% # arrange descending
-    distinct(id, .keep_all = TRUE) %>% # just keep first (more frequent) instance
-    rename(data_provider = dsource) %>%
+    distinct(eid, .keep_all = TRUE) %>% # just keep first (more frequent) instance
+    rename(id = eid, data_provider = dsource) %>%
     select(id, data_provider)
 
   # combine all most frequent inpatient data providers (i.e., for those with just one plus those with several)
@@ -68,14 +68,14 @@ get_data_provider <- function(df,
 
   # get latest date of hospital diagnoses for those with multiple data providers (to determine censoring later on)
   diagnoses_dates_dt <- diagnoses_dates %>%
-    filter(id %in% multi_source$id) %>%
+    filter(eid %in% multi_source$id) %>%
     filter(!is.na(epistart)) %>%
     data.table::as.data.table(.)
 
-  inpatient_flux_last <- as.data.frame(diagnoses_dates_dt[, list(epistart = max(epistart, na.rm = TRUE)), by = id])
-  inpatient_flux_last <- merge(inpatient_flux_last, subset(diagnoses_dates, select = c(id, epistart, dsource)),
-                               by = c('id', 'epistart'), all.x = TRUE) %>%
-    rename(data_provider = dsource) %>%
+  inpatient_flux_last <- as.data.frame(diagnoses_dates_dt[, list(epistart = max(epistart, na.rm = TRUE)), by = eid])
+  inpatient_flux_last <- merge(inpatient_flux_last, subset(diagnoses_dates, select = c(eid, epistart, dsource)),
+                               by = c('eid', 'epistart'), all.x = TRUE) %>%
+    rename(id = eid, data_provider = dsource) %>%
     select(id, data_provider) %>%
     distinct(id, .keep_all = TRUE)
 
@@ -90,7 +90,8 @@ get_data_provider <- function(df,
 
 
   # For those that do not have inpatient data providers, we will first use GP registrations to fill the gaps
-  gp_reg <- read.csv(gp_regs_path, sep='\t', header=TRUE, quote='')
+  gp_reg <- read.csv(gp_regs_path, sep='\t', header=TRUE, quote='') %>%
+    rename(id = eid)
   gp_reg[gp_reg == ''] <- NA
   gp_reg <- gp_reg %>%
     select(id, data_provider, reg_date, deduct_date) %>%
@@ -145,19 +146,20 @@ get_data_provider <- function(df,
 
   # for people without good registration data, we will use primary care diagnosis data
   gp_diagnoses <- data.table::fread(gp_clinical_path, sep='\t', header=TRUE, quote='') %>%
-    as.data.frame() %>%
-    filter(!id %in% gp_reg_freq$id) %>%
-    select(id, data_provider, event_dt) %>%
+    as.data.frame(.) %>%
+    filter(!eid %in% gp_reg_freq$id) %>%
+    select(eid, data_provider, event_dt) %>%
     mutate(across(event_dt, ~as.Date(., format = '%d/%m/%Y')))
 
   # all that are left were always diagnosed within just one data provider
   gp_diagnoses_constant <- gp_diagnoses %>%
-    group_by(id, data_provider) %>%
+    group_by(eid, data_provider) %>%
     summarise(count = n()) %>%
     ungroup()
   gp_diagnoses_constant <- gp_diagnoses_constant %>%
-    filter(!id %in% gp_diagnoses_constant$id[duplicated(gp_diagnoses_constant$id)]) %>%
-    select(id, data_provider)
+    filter(!eid %in% gp_diagnoses_constant$eid[duplicated(gp_diagnoses_constant$eid)]) %>%
+    select(eid, data_provider) %>%
+    rename(id = eid)
 
   # add to the ones identified using registration data
   gp_reg_freq <- rbind(gp_reg_freq, gp_diagnoses_constant)
