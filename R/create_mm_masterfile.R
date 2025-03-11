@@ -359,5 +359,5 @@ create_mm_masterfile <- function(df,
       select(-`NA`)
   }
 
-  return(icd_all_wide)
+  return(as.data.frame(icd_all_wide))
 }
