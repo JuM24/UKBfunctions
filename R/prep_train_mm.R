@@ -16,6 +16,9 @@
 #' predicted should occur. If not set to `NULL`, the input data frame must
 #' contain a column called 'followup' which is the time in years between baseline
 #' and right-censoring or event occurrence, whichever occurs first.
+#' @param remove_censored Whether participants that were lost to follow-up
+#' before max_followup should be removed. Assumes the presence of the columns
+#' `asc_date` and `censor_date` in the data frame.
 #' @param min_age The minimum age of the sample. Determines whether participants
 #' below a certain age should be dropped prior to training.
 #' @param imbalance_correct The desired proportion of the total for the
@@ -51,6 +54,7 @@ prep_train_mm <- function(input_file_path = '',
                           target_var,
                           train_features,
                           max_followup,
+                          remove_censored = FALSE,
                           min_age,
                           imbalance_correct,
                           remove_vars = NULL,
@@ -78,6 +82,7 @@ prep_train_mm <- function(input_file_path = '',
                                              target_var = target_var,
                                              amend_features = amend_features,
                                              max_followup = max_followup,
+                                             remove_censored = remove_censored,
                                              imbalance_correct = imbalance_correct,
                                              remove_vars = remove_vars,
                                              balance_prop = balance_prop,
