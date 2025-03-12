@@ -159,11 +159,12 @@ correct_balance <- function(df,
 
     # random sample of the majority class
     set.seed(random_seed)
-    majority_sample <- sample(majority_cases$id, desired_majority)
+    majority_sample <- sample(seq_len(nrow(majority_cases)), desired_majority)
 
     # downsample and merge the two classes
-    majority_cases_downsampled <- majority_cases[majority_cases$id %in% majority_sample, ]
+    majority_cases_downsampled <- majority_cases[majority_sample, ]
     df_downsampled <- rbind(majority_cases_downsampled, minority_cases)
+
 
     if (verbose == TRUE){
       # return the number of removed cases from the majority class
