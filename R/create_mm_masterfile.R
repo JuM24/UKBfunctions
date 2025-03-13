@@ -336,6 +336,7 @@ create_mm_masterfile <- function(df,
       icd_all$disorder[icd_all$diag_date >= time_zero] <- NA
       icd_all$diag_date[icd_all$diag_date >= time_zero] <- NA
       # calculate age at ascertainment
+      icd_all$asc_date <- time_zero
       icd_all$asc_age <- as.numeric(difftime(time_zero,
                                              icd_all$birth_date,
                                              units = 'days'))/365.25
