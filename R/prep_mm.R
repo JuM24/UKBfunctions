@@ -62,7 +62,11 @@ prep_mm <- function(input_file_path = '',
                           train = TRUE){
 
   # read in the data
-  train_test <- readRDS(paste0(input_file_path, mm_source, '_split_', target_var, '.Rds'))
+  if (input_file_path == ''){
+    train_test <- readRDS(paste0(input_file_path, mm_source, '_split_', target_var, '.Rds'))
+  } else{
+    train_test <- readRDS(input_file_path)
+  }
   train_set <- train_test$train_set
   test_set <- train_test$test_set
 
