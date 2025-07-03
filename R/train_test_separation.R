@@ -6,10 +6,9 @@
 #' @param train_prop Proportion of observations to be allocated to train set.
 #' @param random_seed Random seed set just prior to train/test split.
 #' @param impute_missing Whether missing observations should be imputed with
-#' Random Forest using `missRanger::missRanger`. It assumes that there is a
-#' column called `id` that will not be used in the imputation; all other
-#' columns of the data frame are used.
-#' @param exclude_vars Whether any variables should be excluded from the
+#' Random Forest using `missRanger::missRanger`. By default, all columns of the
+#' data frame are used to impute all other columns.
+#' @param exclude_vars Whether any variables should be not be used in the
 #' imputation. By default, the column `id` is excluded; if all should be used,
 #' set to `NULL`.
 #' @param imp_threads How many threads should be used for the imputation.

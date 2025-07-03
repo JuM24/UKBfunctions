@@ -32,22 +32,11 @@
 #' not included in this list will be considered as nominal variables, and
 #' all numerical variables as numerical.
 #' @param smote_K Relevant for SMOTE. The number of nearest neighbours for KNN.
-#' @param train_algorithm The algorithm to be used for prediction.
-#' @param train_metric Which metric to optimise on. Available options are
-#' "Accuracy", "Kappa", "ROC", "Sens", and "Spec".
-#' @param train_cv_folds The number of folds to be used during cross-validation;
-#' corresponds to the argument `number` in `caret::trainControl`.
-#' @param train_tune_len The length of the tuning grid; corresponds to the
-#' `tuneLength` argument of `caret::train`.
-#' @param train_distribute_cores Whether cross-validation should be performed in
-#' parallel.
-#' @param train_core_number Relevant only if `distribute_cores = TRUE`. The number of
-#' cores to be used in parallel processing.
 #' @param verbose Whether to print progress to console.
 #' @param random_seed Random seed for imbalance correction and cross-validation.
 #' @export
 
-prep_train_mm <- function(input_file_path = '',
+prep_mm <- function(input_file_path = '',
                           output_file_path = '',
                           extra_suffix,
                           mm_source,
@@ -68,7 +57,9 @@ prep_train_mm <- function(input_file_path = '',
                           train_distribute_cores,
                           train_core_number,
                           verbose,
-                          random_seed){
+                          random_seed,
+                          prep = TRUE,
+                          train = TRUE){
 
   # read in the data
   train_test <- readRDS(paste0(input_file_path, mm_source, '_split_', target_var, '.Rds'))
@@ -92,29 +83,8 @@ prep_train_mm <- function(input_file_path = '',
                                              verbose = verbose,
                                              random_seed = random_seed)
 
-  # update train and test sets
-  train_set <- data.frame(object_prep$train_set)
-  test_set <- data.frame(object_prep$test_set)
-
-  # train
-  model_train <- UKBfunctions::train_mm(df = train_set,
-                                        target_var = target_var,
-                                        features = train_features,
-                                        algorithm = train_algorithm,
-                                        train_metric = train_metric,
-                                        cv_folds = train_cv_folds,
-                                        tune_len = train_tune_len,
-                                        distribute_cores = train_distribute_cores,
-                                        core_number = train_core_number,
-                                        random_seed = random_seed,
-                                        verbose = verbose)
-
-  # combine the output with the preparation specs
-  output_object <- list(model_train, train_set, test_set, list(object_prep$specs))
-  names(output_object) <- c('model', 'train_set', 'test_set', 'specs')
-
   # save to disk
-  saveRDS(output_object, paste0(output_file_path, mm_source, '_trained_',
+  saveRDS(object_prep, paste0(output_file_path, mm_source, '_preped_',
                                 target_var, extra_suffix, '.Rds'))
-  return(output_object)
+  return(object_prep)
 }

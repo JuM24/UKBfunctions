@@ -9,9 +9,7 @@
 #' @param amend_features Whether features should be amended; relevant only for
 #' self-report data.
 #' @param max_followup The time within which the outcome that is to be
-#' predicted should occur. If not set to `NULL`, the input data frame must
-#' contain a column called 'followup' which is the time in years between baseline
-#' and right-censoring or event occurrence, whichever occurs first.
+#' predicted should occur.
 #' @param remove_censored Whether participants that were lost to follow-up
 #' before max_followup should be removed. Assumes the presence of the columns
 #' `asc_date` and `censor_date` in the data frame.
@@ -51,20 +49,24 @@ prep_to_train <- function(train_set,
     old_nrow_train <- nrow(train_set)
     old_nrow_test <- nrow(test_set)
     train_set <- train_set %>%
-      filter(as.numeric(difftime(censor_date, asc_date, units = 'days')/365.25) >= max_followup)
+      filter(as.numeric(difftime(censor_date, asc_date, units = 'days')/365.25)
+             >= max_followup)
     test_set <- test_set %>%
-      filter(as.numeric(difftime(censor_date, asc_date, units = 'days')/365.25) >= max_followup)
+      filter(as.numeric(difftime(censor_date, asc_date, units = 'days')/365.25)
+             >= max_followup)
     print(paste0('Removed participants with loss to follow-up within ',
           as.character(max_followup), ' years of time 0: ',
           as.character(old_nrow_train - nrow(train_set)), ' in the training set and ',
           as.character(old_nrow_test - nrow(test_set)), ' in the test set.'))
   } else if (remove_censored == FALSE){
     retained_train <- train_set %>%
-      filter(as.numeric(difftime(censor_date, asc_date, units = 'days')/365.25) < max_followup) %>%
+      filter(as.numeric(difftime(censor_date, asc_date, units = 'days')/365.25)
+             <= max_followup) %>%
       nrow(.) %>%
       as.character(.)
     retained_test <- test_set %>%
-      filter(as.numeric(difftime(censor_date, asc_date, units = 'days')/365.25) < max_followup) %>%
+      filter(as.numeric(difftime(censor_date, asc_date, units = 'days')/365.25)
+             <= max_followup) %>%
       nrow(.) %>%
       as.character(.)
     warning('Some participants were censored before the maximum follow-up of ',

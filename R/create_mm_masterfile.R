@@ -5,9 +5,10 @@
 #' each disorder as columns.
 #' @param df The input data frame.
 #' @param time_zero The date at which the diagnoses are to be ascertained; the
-#' required format is '%d/%m/%Y' If `NULL`, or when `mm_source = 'self_report`,
+#' required format is `%d/%m/%Y`. If `NULL`, or when `mm_source = 'self_report'`,
 #' `time_zero` is set to the date of the UKB baseline assessment.
-#' @param mm_source The source of disease history.
+#' @param mm_source The source of disease history. Currently `self_report` and
+#' `inpatient` are accepted.
 #' @param conv_table The path to the ICD10/ICD9 conversion table.
 #' @param mm_codes_file The path to the codes for each MM.
 #' @param random_seed The number of `set.seed`.
@@ -43,7 +44,7 @@ create_mm_masterfile <- function(df,
                                          as.character(df$X34.0.0)),
                                   format = '%d/%m/%Y')
 
-  # import self-report disease codes
+  # import sisease codes
   mm_codes <- read.csv(mm_codes_file) %>%
     filter(!is.na(code)) %>%
     mutate(code = as.character(code))
@@ -267,7 +268,7 @@ create_mm_masterfile <- function(df,
     icd10 <- merge(icd10_long, icd10_date_long, by = c('id', 'column'))
     icd10$column <- NULL; icd10$version <- 'icd10'
 
-    ## ICD-10: just keep diagnoses from the MM list
+    ## ICD 10: just keep diagnoses from the MM list
     # regular expression to match only codes starting with those in `mm_codes$code`
     icd10$mm_code <- NA
     for (current_code in mm_codes$code) {

@@ -32,7 +32,7 @@ correct_balance <- function(df,
                             random_seed,
                             verbose = FALSE,
                             ordinals = c(),
-                            undo_dummies = TRUE,
+                            reverse_dummies = TRUE,
                             K = 5){
 
   # potentially remove columns
@@ -116,7 +116,7 @@ correct_balance <- function(df,
       mutate(across(starts_with(c(categ_vars, ordinals)), round))
 
     # potentially undo hot-one-encoding and get original variables
-    if (undo_dummies == TRUE){
+    if (reverse_dummies == TRUE){
       df_smote <- undo_dummies(df = df_smote,
                          remove_dummies = TRUE,
                          verbose = verbose)
@@ -124,7 +124,7 @@ correct_balance <- function(df,
       df_smote <- df_smote %>%
         mutate(across(starts_with(ordinals), as.factor))
 
-    } else if (undo_dummies == FALSE){
+    } else if (reverse_dummies == FALSE){
       # ordinals and dummy categoricals back to factors
       df_smote <- df_smote %>%
         mutate(across(starts_with(c(ordinals, categor_vars)), as.factor))
