@@ -1,7 +1,7 @@
 #' Combines training preparation and training itself into a single function. To
 #' be used with multimorbidity predictors.
 #'
-#' `prep_train_mm` Takes the path to the R object that resulted from the
+#' `prep_mm` Takes the path to the R object that resulted from the
 #' pipeline ending with the `train_test_separation` function, prepares the
 #' data for training using `prep_to_train` and trains using `train_mm`.
 #' @param input_file_path The directory name from which to load the input file.
