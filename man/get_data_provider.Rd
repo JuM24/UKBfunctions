@@ -24,7 +24,8 @@ get_data_provider(
 
 \item{gp_clinical_path}{Path to GP clinical event records, UKB field ID 42040.}
 
-\item{cens_dates}{A list of three dates in the form dd.mm.YYYY, corresponding}
+\item{cens_dates}{A list of three dates in the form dd.mm.YYYY, corresponding
+to the censoring dates for England, Scotland, and Wales, as per UKB documentation.}
 
 \item{type}{Determines the approach used to assign the data provider. 'last'
 assigns the last data provider that the participant was in contact with,

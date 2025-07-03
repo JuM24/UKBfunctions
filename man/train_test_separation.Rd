@@ -26,11 +26,10 @@ train_test_separation(
 \item{random_seed}{Random seed set just prior to train/test split.}
 
 \item{impute_missing}{Whether missing observations should be imputed with
-Random Forest using \code{missRanger::missRanger}. It assumes that there is a
-column called \code{id} that will not be used in the imputation; all other
-columns of the data frame are used.}
+Random Forest using \code{missRanger::missRanger}. By default, all columns of the
+data frame are used to impute all other columns.}
 
-\item{exclude_vars}{Whether any variables should be excluded from the
+\item{exclude_vars}{Whether any variables should be not be used in the
 imputation. By default, the column \code{id} is excluded; if all should be used,
 set to \code{NULL}.}
 

@@ -17,10 +17,11 @@ create_mm_masterfile(
 \item{df}{The input data frame.}
 
 \item{time_zero}{The date at which the diagnoses are to be ascertained; the
-required format is '\%d/\%m/\%Y' If \code{NULL}, or when \verb{mm_source = 'self_report},
+required format is \verb{\%d/\%m/\%Y}. If \code{NULL}, or when \code{mm_source = 'self_report'},
 \code{time_zero} is set to the date of the UKB baseline assessment.}
 
-\item{mm_source}{The source of disease history.}
+\item{mm_source}{The source of disease history. Currently \code{self_report} and
+\code{inpatient} are accepted.}
 
 \item{conv_table}{The path to the ICD10/ICD9 conversion table.}
 

@@ -33,9 +33,7 @@ prep_to_train(
 self-report data.}
 
 \item{max_followup}{The time within which the outcome that is to be
-predicted should occur. If not set to \code{NULL}, the input data frame must
-contain a column called 'followup' which is the time in years between baseline
-and right-censoring or event occurrence, whichever occurs first.}
+predicted should occur.}
 
 \item{remove_censored}{Whether participants that were lost to follow-up
 before max_followup should be removed. Assumes the presence of the columns
