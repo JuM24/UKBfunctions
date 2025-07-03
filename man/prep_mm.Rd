@@ -6,8 +6,8 @@
 be used with multimorbidity predictors.}
 \usage{
 prep_mm(
-  input_file_path = "",
-  output_file_path = "",
+  input_file_path = NULL,
+  output_file_path = NULL,
   extra_suffix,
   mm_source,
   target_var,

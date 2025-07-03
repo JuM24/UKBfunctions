@@ -36,36 +36,36 @@
 #' @param random_seed Random seed for imbalance correction and cross-validation.
 #' @export
 
-prep_mm <- function(input_file_path = '',
-                          output_file_path = '',
-                          extra_suffix,
-                          mm_source,
-                          target_var,
-                          train_features,
-                          max_followup,
-                          remove_censored = FALSE,
-                          min_age,
-                          imbalance_correct,
-                          remove_vars = NULL,
-                          balance_prop,
-                          ordinals,
-                          smote_K,
-                          train_algorithm,
-                          train_metric,
-                          train_cv_folds,
-                          train_tune_len,
-                          train_distribute_cores,
-                          train_core_number,
-                          verbose,
-                          random_seed,
-                          prep = TRUE,
-                          train = TRUE){
+prep_mm <- function(input_file_path = NULL,
+                    output_file_path = NULL,
+                    extra_suffix,
+                    mm_source,
+                    target_var,
+                    train_features,
+                    max_followup,
+                    remove_censored = FALSE,
+                    min_age,
+                    imbalance_correct,
+                    remove_vars = NULL,
+                    balance_prop,
+                    ordinals,
+                    smote_K,
+                    train_algorithm,
+                    train_metric,
+                    train_cv_folds,
+                    train_tune_len,
+                    train_distribute_cores,
+                    train_core_number,
+                    verbose,
+                    random_seed,
+                    prep = TRUE,
+                    train = TRUE){
 
   # read in the data
-  if (input_file_path == ''){
-    train_test <- readRDS(paste0(input_file_path, mm_source, '_split_', target_var, '.Rds'))
-  } else{
+  if (is.null(input_file_path)){
     train_test <- readRDS(input_file_path)
+  } else{
+    train_test <- readRDS(paste0(input_file_path, mm_source, '_split_', target_var, '.Rds'))
   }
   train_set <- train_test$train_set
   test_set <- train_test$test_set
@@ -88,7 +88,11 @@ prep_mm <- function(input_file_path = '',
                                              random_seed = random_seed)
 
   # save to disk
+  if (is.null(output_file_path)){
+    output_file_path <- ''
+  }
+
   saveRDS(object_prep, paste0(output_file_path, mm_source, '_preped_',
-                                target_var, extra_suffix, '.Rds'))
+                              target_var, extra_suffix, '.Rds'))
   return(object_prep)
 }
