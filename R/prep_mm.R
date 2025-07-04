@@ -93,7 +93,7 @@ prep_mm <- function(input_file_path = NULL,
     output_file_path <- ''
   }
 
-  saveRDS(object_prep, paste0(output_file_path, 'prep_', mm_source,
+  saveRDS(object_prep, paste0(output_file_path, 'prep_', mm_source, '_',
                               target_var, extra_suffix, '.Rds'))
   return(object_prep)
 }
