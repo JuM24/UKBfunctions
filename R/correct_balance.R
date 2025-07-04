@@ -17,13 +17,15 @@
 #' the ordinal variables in the data frame. All character/factor columns
 #' not included in this list will be considered as nominal variables, and
 #' all numerical variables as numerical.
-#' @param undo_dummies Relevant for SMOTE. Whether dummy variables created for
+#' @param reverse_dummies Relevant for SMOTE. Whether dummy variables created for
 #' nominal categorical variables should be turned back into their original form.
 #' This reduces the number of variables so that e.g., we have "sex" instead of
 #' "sex.0" and "sex.1".
 #' @param K Relevant for SMOTE. The number of nearest neighbours for KNN.
+#' @param scale Whether numerical variables should be scaled. Defaults to TRUE
+#' when `approach = 'SMOTE'`
 #' @export
-
+# TODO add warning about forced scaling for SMOTE
 correct_balance <- function(df,
                             target_var,
                             remove_vars = NULL,
@@ -33,7 +35,8 @@ correct_balance <- function(df,
                             verbose = FALSE,
                             ordinals = c(),
                             reverse_dummies = TRUE,
-                            K = 5){
+                            K = 5,
+                            normalise = FALSE){
 
   # potentially remove columns
   if (!is.null(remove_vars)){
@@ -41,10 +44,12 @@ correct_balance <- function(df,
   }
 
   # normalise numerical variables
-  df <- df %>%
-    mutate_if(is.integer, as.numeric)
-  numeric_columns <- sapply(df, is.numeric)
-  df[numeric_columns] <- lapply(df[numeric_columns], function(x) as.vector(scale(x)))
+  if (normalise == TRUE | (!is.null(approach) && approach == 'SMOTE')){
+    df <- df %>%
+      mutate_if(is.integer, as.numeric)
+    numeric_columns <- sapply(df, is.numeric)
+    df[numeric_columns] <- lapply(df[numeric_columns], function(x) as.vector(scale(x)))
+  }
 
   # the numbers of minority and majority class observations
   num_minority <- min(table(df[[target_var]]))

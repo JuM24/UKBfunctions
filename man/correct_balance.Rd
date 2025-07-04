@@ -14,7 +14,8 @@ correct_balance(
   verbose = FALSE,
   ordinals = c(),
   reverse_dummies = TRUE,
-  K = 5
+  K = 5,
+  normalise = FALSE
 )
 }
 \arguments{
@@ -41,12 +42,15 @@ the ordinal variables in the data frame. All character/factor columns
 not included in this list will be considered as nominal variables, and
 all numerical variables as numerical.}
 
-\item{K}{Relevant for SMOTE. The number of nearest neighbours for KNN.}
-
-\item{undo_dummies}{Relevant for SMOTE. Whether dummy variables created for
+\item{reverse_dummies}{Relevant for SMOTE. Whether dummy variables created for
 nominal categorical variables should be turned back into their original form.
 This reduces the number of variables so that e.g., we have "sex" instead of
 "sex.0" and "sex.1".}
+
+\item{K}{Relevant for SMOTE. The number of nearest neighbours for KNN.}
+
+\item{scale}{Whether numerical variables should be scaled. Defaults to TRUE
+when \code{approach = 'SMOTE'}}
 }
 \description{
 \code{correct_balance} takes a data frame and corrects class imbalance for a
