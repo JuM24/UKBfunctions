@@ -43,30 +43,26 @@ prep_to_train <- function(train_set,
                           ordinals,
                           smote_K,
                           verbose = verbose){
-
+  # TODO CHECK THIS WHOLE FUNCTION
   # potentially remove participants with loss to follow-up before max_followup
   if (remove_censored == TRUE){
     old_nrow_train <- nrow(train_set)
     old_nrow_test <- nrow(test_set)
     train_set <- train_set %>%
-      filter(as.numeric(difftime(censor_date, asc_date, units = 'days')/365.25)
-             >= max_followup)
+      filter(status %in% c(1, 2) | followup >= max_followup)
     test_set <- test_set %>%
-      filter(as.numeric(difftime(censor_date, asc_date, units = 'days')/365.25)
-             >= max_followup)
+      filter(status %in% c(1, 2) | followup >= max_followup)
     print(paste0('Removed participants with loss to follow-up within ',
           as.character(max_followup), ' years of time 0: ',
           as.character(old_nrow_train - nrow(train_set)), ' in the training set and ',
           as.character(old_nrow_test - nrow(test_set)), ' in the test set.'))
   } else if (remove_censored == FALSE){
     retained_train <- train_set %>%
-      filter(as.numeric(difftime(censor_date, asc_date, units = 'days')/365.25)
-             <= max_followup) %>%
+      filter(followup <= max_followup & status == 0) %>%
       nrow(.) %>%
       as.character(.)
     retained_test <- test_set %>%
-      filter(as.numeric(difftime(censor_date, asc_date, units = 'days')/365.25)
-             <= max_followup) %>%
+      filter(followup <= max_followup & status == 0) %>%
       nrow(.) %>%
       as.character(.)
     warning('Some participants were censored before the maximum follow-up of ',
@@ -108,21 +104,32 @@ prep_to_train <- function(train_set,
   # set participants that experienced the outcome after the follow-up cutoff
   # to non-cases
   if (is.null(max_followup)){
-    max_followup <- c(NULL, max(train_set$target_time, test_set$target_time,
+    max_followup <- c(NULL, max(train_set[train_set$status == 1, 'followup'],
+                                test_set[test_set$status == 1, 'followup'],
                                 na.rm = TRUE))
   } else {
-    case_n_train <- sum(train_set[[target_var]] == '1')
-    case_n_test <- sum(test_set[[target_var]] == '1')
-    train_set[is.na(train_set['target_time']) | train_set['target_time'] > max_followup,
-              target_var] <- '0'
-    test_set[is.na(test_set['target_time']) | test_set['target_time'] > max_followup,
-             target_var] <- '0'
+    case_n_train <- sum(train_set$status == 1)
+    case_n_test <- sum(test_set$status == 1)
+
+    # set cases after maximum follow-up to 0
+    train_set[(train_set$status == 1 & train_set$followup > max_followup),
+              'status'] <- 0
+    train_set[(train_set$status == 2 & train_set$followup > max_followup),
+              'status'] <- 0
+    train_set$followup[train_set$followup > max_followup] <- max_followup
+
+    test_set[(test_set$status == 1 & test_set$followup > max_followup),
+              'status'] <- 0
+    test_set[(test_set$status == 2 & test_set$followup > max_followup),
+              'status'] <- 0
+    test_set$followup[test_set$followup > max_followup] <- max_followup
+
     if (verbose == TRUE){
       print(paste0('Set cases ascertained more than ', as.character(max_followup),
                    ' years after baseline to non-cases: ',
-                   as.character(case_n_train - sum(train_set[[target_var]] == '1')),
+                   as.character(case_n_train - sum(train_set$status == 1)),
                    ' in the training set and ',
-                   as.character(case_n_test - sum(test_set[[target_var]] == '1')),
+                   as.character(case_n_test - sum(test_set$status == 1)),
                    ' in the test set.'))
     }
   }
@@ -133,7 +140,7 @@ prep_to_train <- function(train_set,
 
   # potentially correct class imbalance in the training set
   train_set <- UKBfunctions::correct_balance(df = train_set,
-                                             target_var = target_var,
+                                             target_var = 'status',
                                              approach = imbalance_correct,
                                              remove_vars = remove_vars,
                                              balance_prop = balance_prop,
@@ -148,7 +155,11 @@ prep_to_train <- function(train_set,
     old_nrow_test <- nrow(test_set)
 
     # convert min_age to the corresponding scaled cutoff
-    scaled_min_age_train <- (min_age - age_mean_train) / age_sd_train
+    if (normalise == TRUE){
+      scaled_min_age_train <- (min_age - age_mean_train) / age_sd_train
+    } else if (normalise == FALSE){
+      scaled_min_age_train <- min_age
+    }
     train_set <- train_set %>%
       filter(asc_age >= scaled_min_age_train)
     test_set <- test_set %>%
@@ -164,10 +175,11 @@ prep_to_train <- function(train_set,
     }
   }
 
-  # test set: normalise and centre
-  num_cols_test <- sapply(test_set, is.numeric)
-  test_set[num_cols_test] <- scale(test_set[num_cols_test])
-
+  # test set: potentially normalise and centre
+  if (normalise == TRUE){
+    num_cols_test <- sapply(test_set, is.numeric)
+    test_set[num_cols_test] <- scale(test_set[num_cols_test])
+  }
   output_df <- list(train_set, test_set, specs)
   names(output_df) <- c('train_set', 'test_set', 'specs')
 
