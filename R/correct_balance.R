@@ -26,6 +26,7 @@
 #' when `approach = 'SMOTE'`
 #' @export
 # TODO add warning about forced scaling for SMOTE
+# TODO: change target_var to status and warn that works only for single outcome not competing risks
 correct_balance <- function(df,
                             target_var,
                             remove_vars = NULL,
