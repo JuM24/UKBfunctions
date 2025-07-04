@@ -26,6 +26,7 @@
 #' @param ordinals Only relevant if `imbalance_correct = 'SMOTE'`. A vector of
 #' ordinal categorical variables in the training data.
 #' @param K Only relevant if `imbalance_correct = 'SMOTE'`. The K for KNN.
+#' @param normalise Whether to scale numerical data.
 #' @param verbose Whether to print progress to console.
 #' @export
 
@@ -42,6 +43,7 @@ prep_to_train <- function(train_set,
                           random_seed,
                           ordinals,
                           smote_K,
+                          normalise = FALSE,
                           verbose = verbose){
   # TODO CHECK THIS WHOLE FUNCTION
   # potentially remove participants with loss to follow-up before max_followup
@@ -147,7 +149,8 @@ prep_to_train <- function(train_set,
                                              random_seed = random_seed,
                                              verbose = verbose,
                                              ordinals = ordinals,
-                                             K = smote_K)
+                                             K = smote_K,
+                                             normalise = normalise)
 
   # remove younger participants
   if (!is.null(min_age)){

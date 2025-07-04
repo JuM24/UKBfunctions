@@ -19,6 +19,7 @@ prep_to_train(
   random_seed,
   ordinals,
   smote_K,
+  normalise = FALSE,
   verbose = verbose
 )
 }
@@ -56,6 +57,8 @@ after SMOTE.}
 
 \item{ordinals}{Only relevant if \code{imbalance_correct = 'SMOTE'}. A vector of
 ordinal categorical variables in the training data.}
+
+\item{normalise}{Whether to scale numerical data.}
 
 \item{verbose}{Whether to print progress to console.}
 
