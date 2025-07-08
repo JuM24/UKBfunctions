@@ -33,7 +33,7 @@
 prep_to_train <- function(train_set,
                           test_set,
                           target_var,
-                          amend_features = FALSE,
+                          amend_features,
                           max_followup = NULL,
                           remove_censored = FALSE,
                           imbalance_correct = NULL,
