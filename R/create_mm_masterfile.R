@@ -18,6 +18,7 @@ create_mm_masterfile <- function(df,
                                  time_zero = NULL,
                                  mm_source,
                                  conv_table = NULL,
+                                 MMs,
                                  mm_codes_file,
                                  random_seed = 24){
 
@@ -44,10 +45,12 @@ create_mm_masterfile <- function(df,
                                          as.character(df$X34.0.0)),
                                   format = '%d/%m/%Y')
 
-  # import sisease codes
+  # import disease codes
   mm_codes <- read.csv(mm_codes_file) %>%
-    filter(!is.na(code)) %>%
+    # remove NAs and retain only those codes that the user has chosen
+    filter(!is.na(code) & disorder %in% MMs) %>%
     mutate(code = as.character(code))
+
 
 
   if (mm_source == 'self_report'){

@@ -9,6 +9,7 @@ create_mm_masterfile(
   time_zero = NULL,
   mm_source,
   conv_table = NULL,
+  MMs,
   mm_codes_file,
   random_seed = 24
 )
