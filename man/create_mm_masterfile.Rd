@@ -9,7 +9,6 @@ create_mm_masterfile(
   time_zero = NULL,
   mm_source,
   conv_table = NULL,
-  MMs,
   mm_codes_file,
   random_seed = 24
 )
@@ -25,9 +24,6 @@ required format is \verb{\%d/\%m/\%Y}. If \code{NULL}, or when \code{mm_source =
 \code{inpatient} are accepted.}
 
 \item{conv_table}{The path to the ICD10/ICD9 conversion table.}
-
-\item{MMs}{The list of user-selected multimorbidity variables; i.e.,
-medical conditions.}
 
 \item{mm_codes_file}{The path to the codes for each MM.}
 

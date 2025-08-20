@@ -10,8 +10,6 @@
 #' @param mm_source The source of disease history. Currently `self_report` and
 #' `inpatient` are accepted.
 #' @param conv_table The path to the ICD10/ICD9 conversion table.
-#' @param MMs The list of user-selected multimorbidity variables; i.e.,
-#' medical conditions.
 #' @param mm_codes_file The path to the codes for each MM.
 #' @param random_seed The number of `set.seed`.
 #' @export
@@ -20,7 +18,6 @@ create_mm_masterfile <- function(df,
                                  time_zero = NULL,
                                  mm_source,
                                  conv_table = NULL,
-                                 MMs,
                                  mm_codes_file,
                                  random_seed = 24){
 
@@ -49,8 +46,8 @@ create_mm_masterfile <- function(df,
 
   # import disease codes
   mm_codes <- read.csv(mm_codes_file) %>%
-    # remove NAs and retain only those codes that the user has chosen
-    filter(!is.na(code) & disorder %in% MMs) %>%
+    # remove NAs
+    filter(!is.na(code)) %>%
     mutate(code = as.character(code))
 
 
