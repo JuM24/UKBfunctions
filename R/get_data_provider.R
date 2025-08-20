@@ -217,7 +217,7 @@ get_data_provider <- function(df,
   }
 
   # determine earliest between censoring and loss to follow-up
-  loss_to_followup <- main_vars %>%
+  loss_to_followup <- df %>%
     select(id, starts_with('X191.')) %>%
     rename(loss_to_follow_up_date = X191.0.0)
 
