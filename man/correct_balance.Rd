@@ -49,7 +49,7 @@ This reduces the number of variables so that e.g., we have "sex" instead of
 
 \item{K}{Relevant for SMOTE. The number of nearest neighbours for KNN.}
 
-\item{scale}{Whether numerical variables should be scaled. Defaults to TRUE
+\item{normalise}{Whether numerical variables should be scaled. Defaults to TRUE
 when \code{approach = 'SMOTE'}}
 }
 \description{

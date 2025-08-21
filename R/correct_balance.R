@@ -22,7 +22,7 @@
 #' This reduces the number of variables so that e.g., we have "sex" instead of
 #' "sex.0" and "sex.1".
 #' @param K Relevant for SMOTE. The number of nearest neighbours for KNN.
-#' @param scale Whether numerical variables should be scaled. Defaults to TRUE
+#' @param normalise Whether numerical variables should be scaled. Defaults to TRUE
 #' when `approach = 'SMOTE'`
 #' @export
 # TODO add warning about forced scaling for SMOTE

@@ -45,7 +45,7 @@ prep_to_train <- function(train_set,
                           smote_K,
                           normalise = FALSE,
                           verbose = verbose){
-  # TODO CHECK THIS WHOLE FUNCTION
+
   # potentially remove participants with loss to follow-up before max_followup
   if (remove_censored == TRUE){
     old_nrow_train <- nrow(train_set)
@@ -55,10 +55,10 @@ prep_to_train <- function(train_set,
     test_set <- test_set %>%
       filter(status %in% c(1, 2) | followup >= max_followup)
     print(paste0('Removed participants with loss to follow-up within ',
-          as.character(max_followup), ' years of time 0: ',
-          as.character(old_nrow_train - nrow(train_set)), ' in the training set and ',
-          as.character(old_nrow_test - nrow(test_set)), ' in the test set.'))
-  } else if (remove_censored == FALSE){
+                 as.character(max_followup), ' years of time 0: ',
+                 as.character(old_nrow_train - nrow(train_set)), ' in the training set and ',
+                 as.character(old_nrow_test - nrow(test_set)), ' in the test set.'))
+  } else if (remove_censored == FALSE & !is.null(max_followup)){
     retained_train <- train_set %>%
       filter(followup <= max_followup & status == 0) %>%
       nrow(.) %>%
@@ -89,7 +89,7 @@ prep_to_train <- function(train_set,
                        'imbalance_correct', 'balance_prop')
     }
   } else if (is.null(imbalance_correct)){
-    specs <- c(remove_censored, amend_features, min_age, max_followup, random_seed)
+    specs <- list(remove_censored, amend_features, min_age, max_followup, random_seed)
     names(specs) = c('remove_censored', 'amend_features', 'min_age',
                      'max_followup', 'random_seed')
 
@@ -105,11 +105,7 @@ prep_to_train <- function(train_set,
 
   # set participants that experienced the outcome after the follow-up cutoff
   # to non-cases
-  if (is.null(max_followup)){
-    max_followup <- c(NULL, max(train_set[train_set$status == 1, 'followup'],
-                                test_set[test_set$status == 1, 'followup'],
-                                na.rm = TRUE))
-  } else {
+  if (!is.null(max_followup)) {
     case_n_train <- sum(train_set$status == 1)
     case_n_test <- sum(test_set$status == 1)
 
@@ -121,9 +117,9 @@ prep_to_train <- function(train_set,
     train_set$followup[train_set$followup > max_followup] <- max_followup
 
     test_set[(test_set$status == 1 & test_set$followup > max_followup),
-              'status'] <- 0
+             'status'] <- 0
     test_set[(test_set$status == 2 & test_set$followup > max_followup),
-              'status'] <- 0
+             'status'] <- 0
     test_set$followup[test_set$followup > max_followup] <- max_followup
 
     if (verbose == TRUE){
