@@ -73,6 +73,9 @@ all numerical variables as numerical.}
 \item{random_seed}{Random seed for imbalance correction and cross-validation.}
 }
 \description{
+REMOVE THIS FUNCTION - IT IS UNUSED AND REDUNDANT !!!!!!!!
+}
+\details{
 \code{prep_mm} Takes the path to the R object that resulted from the
 pipeline ending with the \code{train_test_separation} function, prepares the
 data for training using \code{prep_to_train} and trains using \code{train_mm}.

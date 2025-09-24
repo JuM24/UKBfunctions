@@ -9,9 +9,9 @@ phys_act_classify(x)
 \arguments{
 \item{x}{The input array.
 
-0 - (none, low \link{light household tasks only}
-1 - medium \link{heavy household tasks and/or walking for pleasure and/or other exercise},
-2 - high \link{strenuous sports}).}
+0 - none, low light household tasks only
+1 - medium heavy household tasks and/or walking for pleasure and/or other exercise,
+2 - high strenuous sports.}
 }
 \description{
 \code{phys_act_classify} takes an array of coded physical activity answers

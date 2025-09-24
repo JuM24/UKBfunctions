@@ -8,7 +8,9 @@ train_mm(
   df,
   target_var,
   features,
+  prediction_type,
   algorithm,
+  competing_risk,
   train_metric = "ROC",
   cv_folds,
   tune_len,
@@ -23,7 +25,15 @@ train_mm(
 
 \item{target_var}{The target variable to be predicted.}
 
+\item{features}{The features used to predict the target.}
+
+\item{prediction_type}{Type of prediction; possible options are
+"classification" and "survival".}
+
 \item{algorithm}{The algorithm to be used for prediction.}
+
+\item{competing_risk}{Whether there is a competing event to the main target
+event. If \code{TRUE}, the \code{status} column will be used.}
 
 \item{train_metric}{Which metric to optimise on. Available options are
 "Accuracy", "Kappa", "ROC", "Sens", and "Spec".}

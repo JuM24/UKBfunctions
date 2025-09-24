@@ -5,7 +5,12 @@
 #' the supplied features.
 #' @param df The input data frame.
 #' @param target_var The target variable to be predicted.
+#' @param features The features used to predict the target.
+#' @param prediction_type Type of prediction; possible options are
+#' "classification" and "survival".
 #' @param algorithm The algorithm to be used for prediction.
+#' @param competing_risk Whether there is a competing event to the main target
+#' event. If `TRUE`, the `status` column will be used.
 #' @param train_metric Which metric to optimise on. Available options are
 #' "Accuracy", "Kappa", "ROC", "Sens", and "Spec".
 #' @param cv_folds The number of folds to be used during cross-validation;
@@ -26,7 +31,9 @@
 train_mm <- function(df,
                      target_var,
                      features,
+                     prediction_type,
                      algorithm,
+                     competing_risk,
                      train_metric = 'ROC',
                      cv_folds,
                      tune_len,

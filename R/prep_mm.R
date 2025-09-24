@@ -1,6 +1,8 @@
 #' Combines training preparation and training itself into a single function. To
 #' be used with multimorbidity predictors.
 #'
+#' REMOVE THIS FUNCTION - IT IS UNUSED AND REDUNDANT !!!!!!!!
+#'
 #' `prep_mm` Takes the path to the R object that resulted from the
 #' pipeline ending with the `train_test_separation` function, prepares the
 #' data for training using `prep_to_train` and trains using `train_mm`.
