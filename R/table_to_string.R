@@ -51,8 +51,6 @@ table_to_string <- function(file_path,
   # add extra names for variables with multiple instances
   #df_multi_instance <- df[df[[instance_column_name]] != 1, ]
   for (id_name in df[[id_column_name]]){
-    print(paste(as.character(counter), id_name))
-    counter <- counter + 1
     # check if instance and repeat suffix needs to be added
     instance_n <- df[df[[id_column_name]] == id_name, instance_column_name]
     start_a <- df[df[[id_column_name]] == id_name, repeats_low]
