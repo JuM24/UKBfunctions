@@ -4,7 +4,14 @@
 \alias{table_to_string}
 \title{Create final features out of the variables}
 \usage{
-table_to_string(file_path, id_column_name, instance_column_name, output_path)
+table_to_string(
+  file_path,
+  id_column_name,
+  instance_column_name,
+  repeats_low,
+  repeats_high,
+  keep_assessments = "all"
+)
 }
 \arguments{
 \item{file_path}{File path of the table.}
@@ -12,9 +19,14 @@ table_to_string(file_path, id_column_name, instance_column_name, output_path)
 \item{id_column_name}{The name of the column that contains field IDs.}
 
 \item{instance_column_name}{The name of the column that contains the number
-of instances.}
+of instances - i0, i1, etc.}
 
-\item{output_path}{The path, including full file name, where to write the file.}
+\item{repeats_low}{Column name for the starting digit for repeats which are
+0 or 1 for a0 and a1.}
+
+\item{repeats_high}{Column name for the last digit for repeats.}
+
+\item{keep_assessments}{Which assessments are to be kept; accepts 'all' and '0'.}
 }
 \description{
 \code{table_to_string} takes a table and transforms it into a string for the UKB
