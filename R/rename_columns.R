@@ -13,8 +13,15 @@ rename_columns <- function(df,
                            colname_file,
                            old_cols,# vector, same with new_cols
                            new_cols){
+
+  # remove NA columns and throw warning
+  if (sum(is.na(colname_file[, c(old_cols, new_cols)])) > 0){
+    colname_file <-
+      colname_file[complete.cases(colname_file[, c(old_cols, new_cols)]), ]
+    warning('Some old/new column names were NA and were removed.')
+  }
   # build lookup vector
-  name_dict <- setNames(old_cols, new_cols)
+  name_dict <- setNames(colname_file[[old_cols]], colname_file[[new_cols]])
   # list of simple names to simplify column name later on
   new_names <- c()
   new_names_whole <- c()
