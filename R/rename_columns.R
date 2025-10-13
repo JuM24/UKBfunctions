@@ -28,10 +28,9 @@ rename_columns <- function(df,
   # rename iteratively
   for (name in colnames(df)){
     # main part of name
-    name_simple <- sub('^X([^.]*)\\..*$', '\\1', name)
-
+    name_simple <- sub('^[^0-9]*([0-9]+).*', '\\1', name)
     # the instance suffix
-    suffix = str_replace(name, '^[^.]*', "")
+    suffix = str_replace(name, '^[^._]*', "")
     # fetch new name from dictionary
     new_name <- names(name_dict[name_dict == name_simple])
     new_names <- c(new_names, new_name)
