@@ -22,12 +22,13 @@ rename_columns <- function(df,
                            field_names = NULL,
                            new_cols = NULL){
 
+  # set aside 'eid' column because it's special
+  cn <- colnames(df)
+  stopifnot(identical(cn[1], 'eid'))
+  rest <- cn[-1]
+
   ## in the default setting, we just change to old 'X'-based formatting
   if (is.null(field_names) & is.null(new_cols)){
-    # TODO: ADD CODE
-    cn <- colnames(df)
-    stopifnot(identical(cn[1], 'eid'))
-    rest <- cn[-1]
     # replace all 'p' with 'X', all '_' with '.', and remove all 'i'
     rest <- gsub('p', 'X', rest, fixed = TRUE)
     rest <- gsub('_', '.', rest, fixed = TRUE)
@@ -36,7 +37,7 @@ rename_columns <- function(df,
     dot_counts <- lengths(regmatches(rest, gregexpr('\\.', rest)))
     rest <- ifelse(dot_counts == 0, paste0(rest, '.0.0'), rest)
     rest <- ifelse(dot_counts == 1, paste0(rest, '.0'), rest)
-    df <- data.frame(rest)
+    colnames(df) <- c('eid', rest)
 
     ## throw error if colnames are incorrectly specified
   } else if (is.null(field_names) + is.null(new_cols) == 1 ||
@@ -53,6 +54,8 @@ rename_columns <- function(df,
         colname_file[complete.cases(colname_file[, c(field_names, new_cols)]), ]
       warning('Some old/new column names were NA and were removed.')
     }
+    # remove all all 'i'
+    colnames(df) <- c('eid', gsub('i', '', rest, fixed = TRUE))
     # build lookup vector
     name_dict <- setNames(colname_file[[field_names]], colname_file[[new_cols]])
     # list of simple names to simplify column name later on
