@@ -5,25 +5,25 @@
 #' @param df Input data frame whose column names will be changed.
 #' @param colname_file Data frame that contains as separate columns both old
 #' and new column names of `df`.
-#' @param old_cols Name of the column with old column names.
+#' @param field_names Name of the column with UKB field names names.
 #' @param new_cols Name of the column with new column names
 #' @details
 #' One of two options is allowd:
-#' 1: `old_cols`, `new_cols`, and `colname_file` are `NULL`, in which case
+#' 1: `field_names`, `new_cols`, and `colname_file` are `NULL`, in which case
 #' the RAP-based column naming will be replae with the "old" local naming.
-#' 2: `old_cols`, `new_cols`, and `colname_file` are provided by the user,
-#' in which case the latter must contain as columns `old_cols` and `new_cols`
-#' that refer to the old to-be-replaced names and the new names, respectively.
+#' 2: `field_names`, `new_cols`, and `colname_file` are provided by the user,
+#' in which case the latter must contain as columns `field_names` and `new_cols`
+#' that refer to the old to-be-replaced field names and the new names, respectively.
 #'
 #' @export
 
 rename_columns <- function(df,
                            colname_file = NULL,
-                           old_cols = NULL,
+                           field_names = NULL,
                            new_cols = NULL){
 
   ## in the default setting, we just change to old 'X'-based formatting
-  if (is.null(old_cols) & is.null(new_cols)){
+  if (is.null(field_names) & is.null(new_cols)){
     # TODO: ADD CODE
     cn <- colnames(df)
     stopifnot(identical(cn[1], 'eid'))
@@ -38,21 +38,21 @@ rename_columns <- function(df,
     rest <- ifelse(dot_counts == 1, paste0(rest, '.0'), rest)
 
     ## throw error if colnames are incorrectly specified
-  } else if (is.null(old_cols) + is.null(new_cols) == 1 ||
-             (!old_cols %in% colnames(df) | !new_cols %in% colnames(df))){
-    stop('`old_cols` and `new_cols` must either both be `NULL` or both present
+  } else if (is.null(field_names) + is.null(new_cols) == 1 ||
+             (!field_names %in% colnames(df) | !new_cols %in% colnames(df))){
+    stop('`field_names` and `new_cols` must either both be `NULL` or both present
          as `colnames` in `df`.')
 
-    ## condition when both `old_cols` and `new_cols` are provided by user
+    ## condition when both `field_names` and `new_cols` are provided by user
     } else{
     # remove NA columns and throw warning
-    if (sum(is.na(colname_file[, c(old_cols, new_cols)])) > 0){
+    if (sum(is.na(colname_file[, c(field_names, new_cols)])) > 0){
       colname_file <-
-        colname_file[complete.cases(colname_file[, c(old_cols, new_cols)]), ]
+        colname_file[complete.cases(colname_file[, c(field_names, new_cols)]), ]
       warning('Some old/new column names were NA and were removed.')
     }
     # build lookup vector
-    name_dict <- setNames(colname_file[[old_cols]], colname_file[[new_cols]])
+    name_dict <- setNames(colname_file[[field_names]], colname_file[[new_cols]])
     # list of simple names to simplify column name later on
     new_names <- c()
     new_names_whole <- c()
