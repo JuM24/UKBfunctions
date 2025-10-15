@@ -4,7 +4,7 @@
 \alias{rename_columns}
 \title{Rename columns based on dictionary}
 \usage{
-rename_columns(df, colname_file, old_cols, new_cols)
+rename_columns(df, colname_file = NULL, old_cols = NULL, new_cols = NULL)
 }
 \arguments{
 \item{df}{Input data frame whose column names will be changed.}
@@ -19,4 +19,12 @@ and new column names of \code{df}.}
 \description{
 \code{rename_columns} takes a data frame and a .csv file that acts as a dictionary
 to change column names of the data frame.
+}
+\details{
+One of two options is allowd:
+1: \code{old_cols}, \code{new_cols}, and \code{colname_file} are \code{NULL}, in which case
+the RAP-based column naming will be replae with the "old" local naming.
+2: \code{old_cols}, \code{new_cols}, and \code{colname_file} are provided by the user,
+in which case the latter must contain as columns \code{old_cols} and \code{new_cols}
+that refer to the old to-be-replaced names and the new names, respectively.
 }
