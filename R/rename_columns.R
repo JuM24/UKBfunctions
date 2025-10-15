@@ -36,6 +36,7 @@ rename_columns <- function(df,
     dot_counts <- lengths(regmatches(rest, gregexpr('\\.', rest)))
     rest <- ifelse(dot_counts == 0, paste0(rest, '.0.0'), rest)
     rest <- ifelse(dot_counts == 1, paste0(rest, '.0'), rest)
+    df <- data.frame(rest)
 
     ## throw error if colnames are incorrectly specified
   } else if (is.null(field_names) + is.null(new_cols) == 1 ||
