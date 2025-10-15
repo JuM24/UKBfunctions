@@ -39,7 +39,8 @@ rename_columns <- function(df,
 
     ## throw error if colnames are incorrectly specified
   } else if (is.null(field_names) + is.null(new_cols) == 1 ||
-             (!field_names %in% colnames(df) | !new_cols %in% colnames(df))){
+             (!field_names %in% colnames(colname_file) |
+              !new_cols %in% colnames(colname_file))){
     stop('`field_names` and `new_cols` must either both be `NULL` or both present
          as `colnames` in `df`.')
 
