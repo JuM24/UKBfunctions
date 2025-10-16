@@ -35,10 +35,14 @@ table_to_string <- function(file_path,
   })
 
   # remove duplicate field IDs
-  df <- distinct(df)
+  df <- dplyr::distinct(df)
 
   # those without entries for instances and repeats get 1s
-  df[is.na(df[[instance_column_name]]), instance_column_name] <- 1
+#  df[is.na(df[[instance_column_name]]), instance_column_name] <- 1
+
+  df[is.na(df[[instances_low]]), instances_low] <- 1
+  df[is.na(df[[instances_high]]), instances_high] <- 1
+
   df[is.na(df[[repeats_low]]), repeats_low] <- 1
   df[is.na(df[[repeats_high]]), repeats_high] <- 1
 
@@ -46,18 +50,21 @@ table_to_string <- function(file_path,
   df <- df[!is.na(df[[id_column_name]]), ]
 
   # create array of field ID names
-  id_list <- df[[id_column_name]]
+  id_list <- c()
 
   # add extra names for variables with multiple instances
-  #df_multi_instance <- df[df[[instance_column_name]] != 1, ]
   for (id_name in df[[id_column_name]]){
     # check if instance and repeat suffix needs to be added
-    instance_n <- df[df[[id_column_name]] == id_name, instance_column_name]
+    #    instance_n <- df[df[[id_column_name]] == id_name, instance_column_name]
+
+    start_i <- df[df[[id_column_name]] == id_name, instances_low]
+    stop_i <- df[df[[id_column_name]] == id_name, instances_high]
+
     start_a <- df[df[[id_column_name]] == id_name, repeats_low]
     stop_a <- df[df[[id_column_name]] == id_name, repeats_high]
-    if (instance_n > 1){
-      id_list <- id_list[id_list != id_name]
-      for (i in seq(0, instance_n-1)){
+
+    if (stop_i > start_i){
+      for (i in seq(start_i, stop_i)){
         new_name <- paste0(id_name, '_i', as.character(i))
         if (stop_a > start_a){
           for (a in seq(start_a, stop_a)){
@@ -69,13 +76,14 @@ table_to_string <- function(file_path,
           id_list <- c(id_list, new_name)
         }
       }
-    } else{ # for the rare cases without multiple instances but with repeats
+    } else{ # we add the new element even if no repeats
       if (stop_a > start_a){
         for (a in seq(start_a, stop_a)){
-          id_list <- id_list[id_list != id_name]
           new_name <- paste0(id_name, '_a', as.character(a))
           id_list <- c(id_list, new_name)
         }
+      } else{ # we add the new element even if no repeats
+        id_list <- c(id_list, id_name)
       }
     }
   }
