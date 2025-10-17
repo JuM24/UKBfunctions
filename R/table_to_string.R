@@ -4,8 +4,8 @@
 #' table exporter
 #' @param file_path File path of the table.
 #' @param id_column_name The name of the column that contains field IDs.
-#' @param instance_column_name The name of the column that contains the number
-#' of instances - i0, i1, etc.
+#' @param instances_low Column name for the starting digit of instances.
+#' @param instances_high Column name for the last digit of instances.
 #' @param repeats_low Column name for the starting digit for repeats which are
 #' 0 or 1 for a0 and a1.
 #' @param repeats_high Column name for the last digit for repeats.
@@ -14,7 +14,8 @@
 
 table_to_string <- function(file_path,
                             id_column_name,
-                            instance_column_name,
+                            instances_low,
+                            instances_high,
                             repeats_low,
                             repeats_high,
                             keep_assessments = 'all'){

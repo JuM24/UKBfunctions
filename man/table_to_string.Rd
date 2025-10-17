@@ -7,7 +7,8 @@
 table_to_string(
   file_path,
   id_column_name,
-  instance_column_name,
+  instances_low,
+  instances_high,
   repeats_low,
   repeats_high,
   keep_assessments = "all"
@@ -18,8 +19,9 @@ table_to_string(
 
 \item{id_column_name}{The name of the column that contains field IDs.}
 
-\item{instance_column_name}{The name of the column that contains the number
-of instances - i0, i1, etc.}
+\item{instances_low}{Column name for the starting digit of instances.}
+
+\item{instances_high}{Column name for the last digit of instances.}
 
 \item{repeats_low}{Column name for the starting digit for repeats which are
 0 or 1 for a0 and a1.}
