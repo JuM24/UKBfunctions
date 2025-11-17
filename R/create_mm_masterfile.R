@@ -21,7 +21,7 @@ create_mm_masterfile <- function(df,
                                  mm_codes_file,
                                  random_seed = 24){
 
-  ## remove participants that were younger than XX at assessment
+  ## create birth date by combining year/month and randomising day
   df$birth_date <- as.Date(paste0('01/',
                                   as.character(df$X52.0.0),
                                   '/' ,
