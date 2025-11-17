@@ -1,11 +1,12 @@
 #' Rename columns based on dictionary
 #'
 #' `rename_columns` takes a data frame and a .csv file that acts as a dictionary
-#' to change column names of the data frame.
+#' to change column names of the data frame. It returns the data frame with
+#' changed column names.
 #' @param df Input data frame whose column names will be changed.
 #' @param colname_file Data frame that contains as separate columns both old
 #' and new column names of `df`.
-#' @param field_names Name of the column with UKB field names names.
+#' @param field_names Name of the column with UKB field names.
 #' @param new_cols Name of the column with new column names
 #' @details
 #' One of two options is allowd:

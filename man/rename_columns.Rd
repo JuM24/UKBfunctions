@@ -12,13 +12,14 @@ rename_columns(df, colname_file = NULL, field_names = NULL, new_cols = NULL)
 \item{colname_file}{Data frame that contains as separate columns both old
 and new column names of \code{df}.}
 
-\item{field_names}{Name of the column with UKB field names names.}
+\item{field_names}{Name of the column with UKB field names.}
 
 \item{new_cols}{Name of the column with new column names}
 }
 \description{
 \code{rename_columns} takes a data frame and a .csv file that acts as a dictionary
-to change column names of the data frame.
+to change column names of the data frame. It returns the data frame with
+changed column names.
 }
 \details{
 One of two options is allowd:
