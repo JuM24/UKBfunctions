@@ -28,6 +28,22 @@ rename_columns <- function(df,
   stopifnot(identical(cn[1], 'eid'))
   rest <- cn[-1]
 
+  # load in colname_file
+  suffix <- tools::file_ext(colname_file)
+
+  tryCatch({
+    if (suffix %in% c('xlsx', 'xls')){
+      df <- as.data.frame(readxl::read_excel(colname_file))
+    } else if (suffix == 'csv'){
+      df <- read.csv(colname_file)
+    } else {
+      stop('Unsupported file type: ', suffix, '.')
+    }
+  }, error = function(e){
+    message('Error while reading file: ', e$message)
+    NULL
+  })
+
   ## in the default setting, we just change to old 'X'-based formatting
   if (is.null(field_names) & is.null(new_cols)){
     # replace all 'p' with 'X', all '_' with '.', and remove all 'i'
