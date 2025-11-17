@@ -4,22 +4,22 @@
 #' to change column names of the data frame. It returns the data frame with
 #' changed column names.
 #' @param df Input data frame whose column names will be changed.
-#' @param colname_file Data frame that contains as separate columns both old
+#' @param colname_file_path Data frame that contains as separate columns both old
 #' and new column names of `df`.
 #' @param field_names Name of the column with UKB field names.
 #' @param new_cols Name of the column with new column names
 #' @details
 #' One of two options is allowd:
-#' 1: `field_names`, `new_cols`, and `colname_file` are `NULL`, in which case
+#' 1: `field_names`, `new_cols`, and `colname_file_path` are `NULL`, in which case
 #' the RAP-based column naming will be replae with the "old" local naming.
-#' 2: `field_names`, `new_cols`, and `colname_file` are provided by the user,
+#' 2: `field_names`, `new_cols`, and `colname_file_path` are provided by the user,
 #' in which case the latter must contain as columns `field_names` and `new_cols`
 #' that refer to the old to-be-replaced field names and the new names, respectively.
 #'
 #' @export
 
 rename_columns <- function(df,
-                           colname_file = NULL,
+                           colname_file_path = NULL,
                            field_names = NULL,
                            new_cols = NULL){
 
@@ -28,21 +28,8 @@ rename_columns <- function(df,
   stopifnot(identical(cn[1], 'eid'))
   rest <- cn[-1]
 
-  # load in colname_file
-  suffix <- tools::file_ext(colname_file)
-
-  tryCatch({
-    if (suffix %in% c('xlsx', 'xls')){
-      df <- as.data.frame(readxl::read_excel(colname_file))
-    } else if (suffix == 'csv'){
-      df <- read.csv(colname_file)
-    } else {
-      stop('Unsupported file type: ', suffix, '.')
-    }
-  }, error = function(e){
-    message('Error while reading file: ', e$message)
-    NULL
-  })
+  # import colname file
+  colname_file <- UKBfunctions::read_tbl(colname_file_path)
 
   ## in the default setting, we just change to old 'X'-based formatting
   if (is.null(field_names) & is.null(new_cols)){

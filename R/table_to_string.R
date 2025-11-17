@@ -19,21 +19,9 @@ table_to_string <- function(file_path,
                             repeats_low,
                             repeats_high,
                             keep_assessments = 'all'){
-  # detect input table format
-  suffix <- tools::file_ext(file_path)
 
-  tryCatch({
-    if (suffix %in% c('xlsx', 'xls')){
-      df <- as.data.frame(readxl::read_excel(file_path))
-    } else if (suffix == 'csv'){
-      df <- read.csv(file_path)
-    } else {
-      stop('Unsupported file type: ', suffix, '.')
-    }
-  }, error = function(e){
-    message('Error while reading file: ', e$message)
-    NULL
-  })
+  # import table
+  df <- UKBfunctions::read_tbl(file_path)
 
   # remove duplicate field IDs
   df <- dplyr::distinct(df)

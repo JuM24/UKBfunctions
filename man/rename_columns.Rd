@@ -4,12 +4,17 @@
 \alias{rename_columns}
 \title{Rename columns based on dictionary}
 \usage{
-rename_columns(df, colname_file = NULL, field_names = NULL, new_cols = NULL)
+rename_columns(
+  df,
+  colname_file_path = NULL,
+  field_names = NULL,
+  new_cols = NULL
+)
 }
 \arguments{
 \item{df}{Input data frame whose column names will be changed.}
 
-\item{colname_file}{Data frame that contains as separate columns both old
+\item{colname_file_path}{Data frame that contains as separate columns both old
 and new column names of \code{df}.}
 
 \item{field_names}{Name of the column with UKB field names.}
@@ -23,9 +28,9 @@ changed column names.
 }
 \details{
 One of two options is allowd:
-1: \code{field_names}, \code{new_cols}, and \code{colname_file} are \code{NULL}, in which case
+1: \code{field_names}, \code{new_cols}, and \code{colname_file_path} are \code{NULL}, in which case
 the RAP-based column naming will be replae with the "old" local naming.
-2: \code{field_names}, \code{new_cols}, and \code{colname_file} are provided by the user,
+2: \code{field_names}, \code{new_cols}, and \code{colname_file_path} are provided by the user,
 in which case the latter must contain as columns \code{field_names} and \code{new_cols}
 that refer to the old to-be-replaced field names and the new names, respectively.
 }
