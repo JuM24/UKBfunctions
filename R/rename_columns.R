@@ -19,7 +19,7 @@
 #' @export
 
 rename_columns <- function(df,
-                           colname_file_path = NULL,
+                           colname_file = NULL,
                            field_names = NULL,
                            new_cols = NULL){
 
@@ -29,7 +29,11 @@ rename_columns <- function(df,
   rest <- cn[-1]
 
   # import colname file
-  colname_file <- UKBfunctions::read_tbl(colname_file_path)
+  if (is.character(colname_file)){
+    colname_file <- UKBfunctions::read_tbl(colname_file)
+  } else {
+    colname_file <- colname_file
+  }
 
   ## in the default setting, we just change to old 'X'-based formatting
   if (is.null(field_names) & is.null(new_cols)){
