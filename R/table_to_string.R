@@ -52,7 +52,7 @@ table_to_string <- function(file_path,
     start_a <- df[df[[id_column_name]] == id_name, repeats_low]
     stop_a <- df[df[[id_column_name]] == id_name, repeats_high]
 
-    if (stop_i > start_i){
+    if (stop_i >= start_i & !id_name %in% c('id', 'eid')){
       for (i in seq(start_i, stop_i)){
         new_name <- paste0(id_name, '_i', as.character(i))
         if (stop_a > start_a){
