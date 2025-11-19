@@ -26,15 +26,6 @@ table_to_string <- function(file_path,
   # remove duplicate field IDs
   df <- dplyr::distinct(df)
 
-  # those without entries for instances and repeats get 1s
-#  df[is.na(df[[instance_column_name]]), instance_column_name] <- 1
-
-  df[is.na(df[[instances_low]]), instances_low] <- 1
-  df[is.na(df[[instances_high]]), instances_high] <- 1
-
-  df[is.na(df[[repeats_low]]), repeats_low] <- 1
-  df[is.na(df[[repeats_high]]), repeats_high] <- 1
-
   # remove rows with NA field IDs
   df <- df[!is.na(df[[id_column_name]]), ]
 
@@ -52,9 +43,15 @@ table_to_string <- function(file_path,
     start_a <- df[df[[id_column_name]] == id_name, repeats_low]
     stop_a <- df[df[[id_column_name]] == id_name, repeats_high]
 
-    if (stop_i >= start_i & !id_name %in% c('id', 'eid')){
+    # if no instances or id variable, then no suffix
+    if (is.na(start_i) | is.na(stop_i) | id_name %in% c('id', 'eid')){
+      id_list <- c(id_list, id_name)
+
+      # if multiple instances, add digit for each
+    } else if (stop_i >= start_i){
       for (i in seq(start_i, stop_i)){
         new_name <- paste0(id_name, '_i', as.character(i))
+        # if multiple repeats, also add digit for each
         if (stop_a > start_a){
           for (a in seq(start_a, stop_a)){
             new_name <- paste0(new_name, '_a', as.character(a))
@@ -66,7 +63,7 @@ table_to_string <- function(file_path,
         }
       }
     } else{ # we add the new element even if no repeats
-      if (stop_a > start_a){
+      if (stop_a > start_a & !is.na(start_a) & !is.na(stop_a)){
         for (a in seq(start_a, stop_a)){
           new_name <- paste0(id_name, '_a', as.character(a))
           id_list <- c(id_list, new_name)
