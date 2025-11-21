@@ -18,7 +18,8 @@ table_to_string <- function(file_path,
                             instances_high,
                             repeats_low,
                             repeats_high,
-                            keep_assessments = 'all'){
+                            keep_assessments = 'all'
+                            ){
 
   # import table
   df <- UKBfunctions::read_tbl(file_path)
