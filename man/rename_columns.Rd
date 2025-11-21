@@ -6,20 +6,24 @@
 \usage{
 rename_columns(
   df,
-  colname_file_path = NULL,
+  colname_file = NULL,
   field_names = NULL,
-  new_cols = NULL
+  new_cols = NULL,
+  ignore_cols = NULL
 )
 }
 \arguments{
 \item{df}{Input data frame whose column names will be changed.}
 
-\item{colname_file_path}{Data frame that contains as separate columns both old
-and new column names of \code{df}.}
-
 \item{field_names}{Name of the column with UKB field names.}
 
 \item{new_cols}{Name of the column with new column names}
+
+\item{ignore_cols}{List of column names which should be ignored and their names
+left unchanged.}
+
+\item{colname_file_path}{Data frame that contains as separate columns both old
+and new column names of \code{df}.}
 }
 \description{
 \code{rename_columns} takes a data frame and a .csv file that acts as a dictionary
