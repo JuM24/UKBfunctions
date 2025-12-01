@@ -10,7 +10,7 @@ train_mm(
   features,
   prediction_type,
   algorithm,
-  competing_risk,
+  competing_risk = FALSE,
   train_metric = "ROC",
   cv_folds,
   tune_len,
