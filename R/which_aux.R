@@ -69,22 +69,31 @@ which_aux <- function(df,
   # inter-variable correlations
   inter_cor_max <- numeric(length(vars))
   inter_cor_n   <- integer(length(vars))
+  inter_cor_max_var <- character(length(vars))
+
+  # rows to use for correlation table (drop missing_var)
+  inter_rows <- setdiff(rownames(cor_abs), missing_var)
 
   for (i in seq_along(vars)) {
     v <- vars[i]
-    col_vals <- cor_abs[, v]
+    col_vals <- cor_abs[inter_rows, v]
 
     # ignore self-cor (already NA on diagonal), but be robust to all-NA column
     if (all(is.na(col_vals))) {
       inter_cor_max[i] <- NA_real_
+      inter_cor_max_var[i] <- NA_character_
       inter_cor_n[i]   <- NA_integer_
     } else {
       inter_cor_max[i] <- max(col_vals, na.rm = TRUE)
+      # name of the variable achieving that max (take first if there are ties)
+      which_max <- which(col_vals == inter_cor_max[i] & !is.na(col_vals))
+      inter_cor_max_var[i] <- names(col_vals)[which_max[1]]
       inter_cor_n[i]   <- sum(col_vals > inter_cor_flag, na.rm = TRUE)
     }
   }
 
   var_tbl$inter_cor_max  <- inter_cor_max
+  var_tbl$inter_cor_max_var <- inter_cor_max_var
   var_tbl$inter_cor_n <- inter_cor_n
 
 
