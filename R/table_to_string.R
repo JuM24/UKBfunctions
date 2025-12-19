@@ -35,9 +35,6 @@ table_to_string <- function(file_path,
 
   # add extra names for variables with multiple instances
   for (id_name in df[[id_column_name]]){
-    # check if instance and repeat suffix needs to be added
-    #    instance_n <- df[df[[id_column_name]] == id_name, instance_column_name]
-
     start_i <- df[df[[id_column_name]] == id_name, instances_low]
     stop_i <- df[df[[id_column_name]] == id_name, instances_high]
 
@@ -45,11 +42,12 @@ table_to_string <- function(file_path,
     stop_a <- df[df[[id_column_name]] == id_name, repeats_high]
 
     # if no instances or id variable, then no suffix
-    if (is.na(start_i) | is.na(stop_i) | id_name %in% c('id', 'eid')){
+    if ((is.na(start_i) | is.na(stop_i)) & (is.na(start_a) | is.na(stop_a)) |
+        id_name %in% c('id', 'eid')){
       id_list <- c(id_list, id_name)
 
       # if multiple instances, add digit for each
-    } else if (stop_i >= start_i){
+    } else if (!is.na(start_i + stop_i) & stop_i >= start_i){
       for (i in seq(start_i, stop_i)){
         new_name <- paste0(id_name, '_i', as.character(i))
         # if multiple repeats, also add digit for each
