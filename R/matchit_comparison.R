@@ -52,10 +52,10 @@ matchit_comparison <- function(df,
   ) %>%
     mutate(
       distance = if_else(method %in% c('cem', 'cardinality'), NA_character_, distance),
+      solver = if_else(method == 'cardinality', cardinality_solver, NA_character_),
       # special distance options for certain algorithms
       distance_options = case_when(
         distance == 'nnet' ~ list(list(size = nnet_size, MaxNWts = nnet_MaxNWts)),
-        method == 'cardinality' ~ list(list(solver = cardinality_solver)),
         TRUE ~ list(NULL)
       )
     ) %>% distinct()
@@ -68,7 +68,7 @@ matchit_comparison <- function(df,
     # specify arguments for matchit runner
     run_matchit <- purrr::possibly(
 
-      function(method, distance, estimand, distance_options) {
+      function(method, distance, estimand, distance_options, cardinality_solver) {
 
         # whether progress should be printed
         if (isTRUE(verbose)) {
@@ -85,6 +85,7 @@ matchit_comparison <- function(df,
 
         if (!is.na(distance)) args$distance <- distance
         if (!is.null(distance_options)) args$distance.options <- distance_options
+        if (!is.null(cardinality_solver)) args$solver <- cardinality_solver
 
         t <- system.time({
           fit <- do.call(MatchIt::matchit, args)
@@ -98,7 +99,9 @@ matchit_comparison <- function(df,
     # run matchit runner that we defined above
     results <- specs %>%
       mutate(
-        out  = purrr::pmap(list(method, distance, estimand, distance_options), run_matchit),
+        out  = purrr::pmap(list(method, distance, estimand,
+                                distance_options, cardinality_solver),
+                           run_matchit),
         ok = purrr::map_lgl(out, ~ !is.null(.x))
       ) %>%
       filter(ok) %>% # retain just those not NA
@@ -129,7 +132,7 @@ matchit_comparison <- function(df,
 
     # specify arguments for matchthem runner
     run_matchthem <- purrr::possibly(
-      function(method, distance, estimand, distance_options) {
+      function(method, distance, estimand, distance_options, cardinality_solver) {
 
         if (isTRUE(verbose)) {
           msg_dist <- if (is.na(distance)) '' else paste0('/', distance)
@@ -146,6 +149,7 @@ matchit_comparison <- function(df,
 
         if (!is.na(distance)) args$distance <- distance
         if (!is.null(distance_options)) args$distance.options <- distance_options
+        if (!is.null(cardinality_solver)) args$solver <- cardinality_solver
 
         t <- system.time({
           fit <- do.call(MatchThem::matchthem, args)
@@ -158,7 +162,9 @@ matchit_comparison <- function(df,
     # run matchthem runner
     results_mi <- specs %>%
       mutate(
-        out = purrr::pmap(list(method, distance, estimand, distance_options), run_matchthem),
+        out = purrr::pmap(list(method, distance, estimand,
+                               distance_options, cardinality_solver),
+                          run_matchthem),
         ok  = purrr::map_lgl(out, ~ !is.null(.x))
       ) %>%
       filter(ok) %>%
