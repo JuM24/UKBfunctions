@@ -34,7 +34,8 @@ matchit_comparison <- function(df,
                                imputed,
                                verbose = FALSE,
                                nnet_size = 100,
-                               nnet_MaxNWts = 10e5){
+                               nnet_MaxNWts = 10e5,
+                               cardinality_solver = 'highs'){
   library(tidyverse)
 
   ## matching formula
@@ -54,6 +55,7 @@ matchit_comparison <- function(df,
       # special distance options for certain algorithms
       distance_options = case_when(
         distance == 'nnet' ~ list(list(size = nnet_size, MaxNWts = nnet_MaxNWts)),
+        distance == 'cardinality' ~ list(list(solver = cardinality_solver)),
         TRUE ~ list(NULL)
       )
     ) %>% distinct()
