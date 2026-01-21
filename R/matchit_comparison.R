@@ -55,7 +55,7 @@ matchit_comparison <- function(df,
       # special distance options for certain algorithms
       distance_options = case_when(
         distance == 'nnet' ~ list(list(size = nnet_size, MaxNWts = nnet_MaxNWts)),
-        distance == 'cardinality' ~ list(list(solver = cardinality_solver)),
+        method == 'cardinality' ~ list(list(solver = cardinality_solver)),
         TRUE ~ list(NULL)
       )
     ) %>% distinct()
