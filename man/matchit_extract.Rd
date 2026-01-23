@@ -2,19 +2,20 @@
 % Please edit documentation in R/matchit_extract.R
 \name{matchit_extract}
 \alias{matchit_extract}
-\title{Extract simplified table of matching metrics from output of \code{matchit_comparison}.}
+\title{Extract simplified table of matching metrics within \code{matchit_comparison}.}
 \usage{
-matchit_extract(bal, imputed, smd_thresh = 0.1)
+matchit_extract(bal, imputed, smd_thresh = 0.05)
 }
 \arguments{
-\item{bal}{The input list; should be the output of \code{matchit_comparison}.}
+\item{bal}{The input list; should be the 'results' object in the output list
+of \code{matchit_comparison}.}
 
 \item{smd_thresh}{The SMD threshold for what is considered a good match.}
 
 \item{impute}{Whether the matching was performed on an imputed dataset.}
 }
 \description{
-\code{matchit_extract} takes as input a list created from running the
-\code{matchit_comparison} function and returns a data frame with simplified
-matching metrics, with matching approaches as rows and metrics as columns.
+\code{matchit_extract} takes as input the 'results' object of the \code{matchit_comparison}
+function to create a data frame with simplified matching metrics,
+with matching approaches as rows and metrics as columns.
 }

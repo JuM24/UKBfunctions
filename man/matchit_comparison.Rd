@@ -11,12 +11,12 @@ matchit_comparison(
   estimand,
   methods,
   distances,
-  s.weights = NULL,
   imputed,
   verbose = FALSE,
   nnet_size = 100,
   nnet_MaxNWts = 1e+06,
-  cardinality_solver = "highs"
+  cardinality_solver = "highs",
+  smd_thresh
 )
 }
 \arguments{
@@ -35,8 +35,6 @@ matching variables; by default, all non-exposure columns are used.}
 \item{distances}{A list of distance metrics or algorithms for propensity score
 calculation as specified in \code{MatchIt}.}
 
-\item{s.weights}{Survey weights if appropriate.}
-
 \item{imputed}{Logical; whether the input data have been imputed using MI or
 not and thus whether \code{MatchThem} or \code{MatchIt} should be implemented.}
 
@@ -48,9 +46,15 @@ See \code{nnet::nnet}.}
 
 \item{nnet_MaxNWts}{Maximum number of allowed weights for when \code{distance = nnet}.
 See \code{nnet::nnet}.}
+
+\item{smd_thresh}{The threshold for the max. SMD that implies balance.}
 }
 \description{
-\code{matchit_comparison} returns a list, with different matching approaches as
-rows and performance metrics as columns. Implements \code{MatchIt} and \code{MatchtThem}.
+\code{matchit_comparison} returns a list, that contains three lists, all with
+different matching approaches as rows. 'Results' is the most comprehensive
+and contains matchit objects to enable further exploration and plotting.
+'metrics_base' and 'metrics_int' are simplified tables with some select metrics
+for the variables in the model and their interactions and 2-order exponentials,
+respectively.
 duplicated elements replaced by NAs.
 }

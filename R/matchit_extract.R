@@ -1,15 +1,16 @@
-#' Extract simplified table of matching metrics from output of `matchit_comparison`.
+#' Extract simplified table of matching metrics within `matchit_comparison`.
 #'
-#' `matchit_extract` takes as input a list created from running the
-#' `matchit_comparison` function and returns a data frame with simplified
-#' matching metrics, with matching approaches as rows and metrics as columns.
-#' @param bal The input list; should be the output of `matchit_comparison`.
+#' `matchit_extract` takes as input the 'results' object of the `matchit_comparison`
+#' function to create a data frame with simplified matching metrics,
+#' with matching approaches as rows and metrics as columns.
+#' @param bal The input list; should be the 'results' object in the output list
+#' of `matchit_comparison`.
 #' @param impute Whether the matching was performed on an imputed dataset.
 #' @param smd_thresh The SMD threshold for what is considered a good match.
 #' @export
 
 
-matchit_extract <- function(bal, imputed, smd_thresh = 0.1) {
+matchit_extract <- function(bal, imputed, smd_thresh = 0.05) {
 
   O <- bal[['Observations']]
 
