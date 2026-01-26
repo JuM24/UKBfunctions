@@ -13,6 +13,7 @@ matchit_comparison(
   distances,
   imputed,
   random_seed = NULL,
+  cores = 1,
   verbose = FALSE,
   nnet_size = 100,
   nnet_MaxNWts = 1e+06,
@@ -40,6 +41,9 @@ calculation as specified in \code{MatchIt}.}
 not and thus whether \code{MatchThem} or \code{MatchIt} should be implemented.}
 
 \item{random_seed}{Numerical; passed to \code{set.seed} and \code{dbarts::bart2}.}
+
+\item{cores}{Numerical; number of cores to run the matching on. It is
+implemented only for matching of MI objects using \code{approach = 'within'}.}
 
 \item{verbose}{Logical; whether the method/distance currently evaluated
 should be printed out.}

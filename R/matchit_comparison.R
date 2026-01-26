@@ -19,6 +19,8 @@
 #' @param imputed Logical; whether the input data have been imputed using MI or
 #' not and thus whether `MatchThem` or `MatchIt` should be implemented.
 #' @param random_seed Numerical; passed to `set.seed` and `dbarts::bart2`.
+#' @param cores Numerical; number of cores to run the matching on. It is
+#' implemented only for matching of MI objects using `approach = 'within'`.
 #' @param verbose Logical; whether the method/distance currently evaluated
 #' should be printed out.
 #' @param nnet_size Size of the hidden layer for when `distance = nnet`.
@@ -37,17 +39,26 @@ matchit_comparison <- function(df,
                                distances,
                                imputed,
                                random_seed = NULL,
+                               cores = 1,
                                verbose = FALSE,
                                nnet_size = 100,
                                nnet_MaxNWts = 10e5,
                                cardinality_solver = 'highs',
                                smd_thresh){
 
+  ## set up parallel processing if requested
+  if (cores > 1){
+    # save sequential processing to clean up after function exits
+    old_plan <- future::plan()
+    on.exit(future::plan(old_plan), add = TRUE)
+    future::plan(future::multisession, workers = cores)
+  }
+
+
   ## matching formula
   match_formula <- as.formula(paste0(exposure,
                                      ' ~ ',
                                      paste0(match_vars, collapse = ' + ')))
-
 
   ## spec grid
   specs <- tidyr::crossing(
@@ -63,9 +74,10 @@ matchit_comparison <- function(df,
         distance == 'nnet' ~ list(list(size = nnet_size, MaxNWts = nnet_MaxNWts)),
         TRUE ~ list(NULL)
       )
-    ) |> dplyr::distinct() |>
-  # unique ID for each spec so that seed remains constant for each spec
-  dplyr::mutate(spec_id = dplyr::row_number())
+    ) |>
+    dplyr::distinct() |>
+    # unique ID for each spec so that seed remains constant for each spec
+    dplyr::mutate(spec_id = dplyr::row_number())
 
 
   ## Separate approaches for non-MI and MI
@@ -123,23 +135,37 @@ matchit_comparison <- function(df,
     otherwise = NULL
   )
 
-  # define a safe bal_tab function to avoid breaking if one approach errors
+  ## define a safe bal_tab function to avoid breaking if one approach errors
   bal_tab_safe <- purrr::safely(
     function(x, ...) cobalt::bal.tab(x, ...),
     otherwise = NULL
   )
 
-  # get error message for the potential `safely` error
+  ## get error message for the potential `safely` error
   err_msg <- function(x) {
     if (is.null(x$error)) '' else x$error$message
   }
 
-  # run matching runner that we defined above
+  ## run matching runner that we defined above
   results <- specs |>
     dplyr::mutate(
-      out  = purrr::pmap(list(spec_id, method, distance, estimand,
-                              distance_options, solver),
-                         run_matching),
+
+      # parallel processing
+      out = if (cores > 1) {
+        furrr::future_pmap(
+          list(spec_id, method, distance, estimand, distance_options, solver),
+          run_matching,
+          .options = furrr::furrr_options(
+            seed = if (is.null(random_seed)) TRUE else random_seed)
+        )
+      } else {
+        # sequential
+        purrr::pmap(
+          list(spec_id, method, distance, estimand, distance_options, solver),
+          run_matching
+        )
+      },
+
       ok = purrr::map_lgl(out, ~ !is.null(.x))
     ) |>
     dplyr::filter(ok) |> # retain just those not NA
@@ -172,7 +198,7 @@ matchit_comparison <- function(df,
 
 
 
-  # extract the metrics as a data frame
+  ## extract the metrics as a data frame
   metrics_base <- results |>
     dplyr::mutate(
       base = purrr::map(bal_base, matchit_extract, imputed = imputed,
