@@ -12,6 +12,7 @@ matchit_comparison(
   methods,
   distances,
   imputed,
+  random_seed = NULL,
   verbose = FALSE,
   nnet_size = 100,
   nnet_MaxNWts = 1e+06,
@@ -37,6 +38,8 @@ calculation as specified in \code{MatchIt}.}
 
 \item{imputed}{Logical; whether the input data have been imputed using MI or
 not and thus whether \code{MatchThem} or \code{MatchIt} should be implemented.}
+
+\item{random_seed}{Numerical; passed to \code{set.seed} and \code{dbarts::bart2}.}
 
 \item{verbose}{Logical; whether the method/distance currently evaluated
 should be printed out.}

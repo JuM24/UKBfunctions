@@ -12,6 +12,8 @@
 
 matchit_extract <- function(bal, imputed, smd_thresh = 0.05) {
 
+  if (is.null(bal)) return(NULL)
+
   O <- bal[['Observations']]
 
   if (isTRUE(imputed)) {

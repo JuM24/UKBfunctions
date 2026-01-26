@@ -18,6 +18,7 @@
 #' calculation as specified in `MatchIt`.
 #' @param imputed Logical; whether the input data have been imputed using MI or
 #' not and thus whether `MatchThem` or `MatchIt` should be implemented.
+#' @param random_seed Numerical; passed to `set.seed` and `dbarts::bart2`.
 #' @param verbose Logical; whether the method/distance currently evaluated
 #' should be printed out.
 #' @param nnet_size Size of the hidden layer for when `distance = nnet`.
@@ -35,6 +36,7 @@ matchit_comparison <- function(df,
                                methods,
                                distances,
                                imputed,
+                               random_seed = NULL,
                                verbose = FALSE,
                                nnet_size = 100,
                                nnet_MaxNWts = 10e5,
@@ -61,7 +63,9 @@ matchit_comparison <- function(df,
         distance == 'nnet' ~ list(list(size = nnet_size, MaxNWts = nnet_MaxNWts)),
         TRUE ~ list(NULL)
       )
-    ) |> dplyr::distinct()
+    ) |> dplyr::distinct() |>
+  # unique ID for each spec so that seed remains constant for each spec
+  dplyr::mutate(spec_id = dplyr::row_number())
 
 
   ## Separate approaches for non-MI and MI
@@ -69,8 +73,19 @@ matchit_comparison <- function(df,
   # specify arguments for matchit runner
   run_matching <- purrr::possibly(
 
-    function(method, distance, estimand,
+    function(spec_id, method, distance, estimand,
              distance_options, solver) {
+
+      # if seed set by user, add the spec-specific ID
+      if(!is.null(random_seed)) {
+        set.seed(random_seed + spec_id)
+
+        # also pass seed to BART via distance.options
+        if (identical(distance, 'bart')) {
+          if (is.null(distance_options)) distance_options <- list()
+          distance_options$seed <- random_seed + spec_id
+        }
+      }
 
       # whether progress should be printed
       if (isTRUE(verbose)) {
@@ -107,10 +122,22 @@ matchit_comparison <- function(df,
     },
     otherwise = NULL
   )
+
+  # define a safe bal_tab function to avoid breaking if one approach errors
+  bal_tab_safe <- purrr::safely(
+    function(x, ...) cobalt::bal.tab(x, ...),
+    otherwise = NULL
+  )
+
+  # get error message for the potential `safely` error
+  err_msg <- function(x) {
+    if (is.null(x$error)) '' else x$error$message
+  }
+
   # run matching runner that we defined above
   results <- specs |>
     dplyr::mutate(
-      out  = purrr::pmap(list(method, distance, estimand,
+      out  = purrr::pmap(list(spec_id, method, distance, estimand,
                               distance_options, solver),
                          run_matching),
       ok = purrr::map_lgl(out, ~ !is.null(.x))
@@ -124,18 +151,25 @@ matchit_comparison <- function(df,
     dplyr::select(-out) |>
     dplyr::mutate(
       # compute matching metrics
-      bal_base = purrr::map(m, ~ cobalt::bal.tab(.x,
-                                                 int = FALSE,
-                                                 poly = 1,
-                                                 stats = c('m', 'v'),
-                                                 un = TRUE)),
+      bal_base_out = purrr::map(m, ~ bal_tab_safe(.x,
+                                                  int=FALSE,
+                                                  poly=1,
+                                                  stats=c('m','v'),
+                                                  un=TRUE)),
+      bal_int_out = purrr::map(m, ~ bal_tab_safe(.x,
+                                                 int=TRUE,
+                                                 poly=2,
+                                                 stats=c('m','v'),
+                                                 un=TRUE)),
+      # `safely` returns two components; first, we just want the first one (result)
+      bal_base = purrr::map(bal_base_out, 'result'),
+      bal_int = purrr::map(bal_int_out,  'result'),
+      # also extract the second component (potential error message)
+      bal_base_err = purrr::map_chr(bal_base_out, err_msg),
+      bal_int_err  = purrr::map_chr(bal_int_out,  err_msg)
+    ) |>
+    dplyr::select(-bal_base_out, -bal_int_out)
 
-      bal_int = purrr::map(m, ~ cobalt::bal.tab(.x,
-                                                int = TRUE,
-                                                poly = 2,
-                                                stats = c('m', 'v'),
-                                                un = TRUE))
-    )
 
 
   # extract the metrics as a data frame
@@ -144,16 +178,16 @@ matchit_comparison <- function(df,
       base = purrr::map(bal_base, matchit_extract, imputed = imputed,
                         smd_thresh = smd_thresh)
     ) |>
-    dplyr::select(method, distance, estimand, runtime_sec, base) |>
-    tidyr::unnest(base, names_sep = '_')
+    dplyr::select(spec_id, method, distance, estimand, runtime_sec, base) |>
+    tidyr::unnest(base, names_sep = '_', keep_empty = TRUE)
 
   metrics_int <- results |>
     dplyr::mutate(
       int = purrr::map(bal_int, matchit_extract, imputed = imputed,
                         smd_thresh = smd_thresh)
     ) |>
-    dplyr::select(method, distance, estimand, runtime_sec, int) |>
-    tidyr::unnest(int, names_sep = '_')
+    dplyr::select(spec_id, method, distance, estimand, runtime_sec, int) |>
+    tidyr::unnest(int, names_sep = '_', keep_empty = TRUE)
 
   output <- list(results, metrics_base, metrics_int)
   names(output) <- c('results', 'metrics_base', 'metrics_int')
