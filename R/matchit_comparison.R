@@ -72,7 +72,7 @@ matchit_comparison <- function(df,
     dplyr::mutate(
       distance = dplyr::if_else(method %in% c('cem', 'cardinality'), NA_character_, distance),
       solver = dplyr::if_else(method == 'cardinality', cardinality_solver, NA_character_),
-      time = dplyr::if_else(method == 'cardinality', cardinality_time, NA_integer_),
+      time = dplyr::if_else(method == 'cardinality', cardinality_time, NA_real_),
       # special distance options for certain algorithms
       distance_options = dplyr::case_when(
         distance == 'nnet' ~ list(list(size = nnet_size, MaxNWts = nnet_MaxNWts)),
@@ -90,7 +90,7 @@ matchit_comparison <- function(df,
   run_matching <- purrr::possibly(
 
     function(spec_id, method, distance, estimand,
-             distance_options, solver) {
+             distance_options, solver, time) {
 
       # if seed set by user, add the spec-specific ID
       if(!is.null(random_seed)) {
