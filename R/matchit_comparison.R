@@ -121,16 +121,30 @@ matchit_comparison <- function(df,
       if (!is.na(solver) && method == 'cardinality') args$solver <- solver
       if (isTRUE(imputed)) args$approach <- 'within'
 
-      t <- system.time({
-        if(!isTRUE(imputed)){
-          fit <- do.call(MatchIt::matchit, args)
-        } else if (isTRUE(imputed)){
-          fit <- do.call(MatchThem::matchthem, args)
-        }
+      # capture warnings
+      warn <- character(0)
+
+      t <- system.time({ # used to time each matching run
+        # used to catch (and save) warning messages
+        fit <- withCallingHandlers(
+          {
+
+            if(!isTRUE(imputed)){
+              do.call(MatchIt::matchit, args)
+            } else if (isTRUE(imputed)){
+              do.call(MatchThem::matchthem, args)
+            }
+          },
+          # this is called when a warning occurs
+          warning = function(w){
+            # extract the warning text; use '<<-' to assign to parent object outside function
+            warn <<- c(warn, conditionMessage(w))
+          }
+        )
       })
 
-      # return list of matchit object and runtime
-      list(m = fit, runtime_sec = unname(t[['elapsed']]))
+      # return list of matchit object, runtime, and warnings
+      list(m = fit, runtime_sec = unname(t[['elapsed']]), warnings = warn)
     },
     otherwise = NULL
   )
@@ -170,9 +184,12 @@ matchit_comparison <- function(df,
     ) |>
     dplyr::filter(ok) |> # retain just those not NA
     dplyr::mutate(
-      # fetch the two objects returned by the function
+      # fetch the objects returned by the function
       m = purrr::map(out, 'm'),
-      runtime_sec = purrr::map_dbl(out, 'runtime_sec')
+      runtime_sec = purrr::map_dbl(out, 'runtime_sec'),
+      warnings = purrr::map(out, 'warnings'),
+      # this is useful to filter out non-warning approaches after function runs
+      has_warning = purrr::map_lgl(warnings, ~ length(.x) > 0)
     ) |>
     dplyr::select(-out) |>
     dplyr::mutate(
