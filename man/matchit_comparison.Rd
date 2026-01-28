@@ -18,6 +18,7 @@ matchit_comparison(
   nnet_size = 100,
   nnet_MaxNWts = 1e+06,
   cardinality_solver = "highs",
+  cardinality_time = 1200,
   smd_thresh
 )
 }
@@ -53,6 +54,10 @@ See \code{nnet::nnet}.}
 
 \item{nnet_MaxNWts}{Maximum number of allowed weights for when \code{distance = nnet}.
 See \code{nnet::nnet}.}
+
+\item{cardinality_solver}{The name of the solver for the optimisation problem.}
+
+\item{cardinality_time}{The max. time before optimisation aborts.}
 
 \item{smd_thresh}{The threshold for the max. SMD that implies balance.}
 }
