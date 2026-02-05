@@ -25,7 +25,16 @@ table_to_string <- function(file_path,
   df <- UKBfunctions::read_tbl(file_path)
 
   # remove duplicate field IDs
-  df <- dplyr::distinct(df)
+  n_before <- nrow(df)
+  df <- df |>
+    dplyr::distinct(.data[[id_column_name]], .keep_all = TRUE)
+  # throw warning if any rows removed
+  if (nrow(df) < n_before) {
+    warning(sprintf(
+      "distinct() removed %d duplicate row(s) based on '%s'.",
+      n_before - nrow(df), id_column_name
+    ), call. = FALSE)
+  }
 
   # remove rows with NA field IDs
   df <- df[!is.na(df[[id_column_name]]), ]
