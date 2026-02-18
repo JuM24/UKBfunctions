@@ -27,9 +27,6 @@ rename_columns <- function(df,
                            ignore_cols = NULL){
 
   # set aside ignorable columns
-  cn <- colnames(df)
-
-
   if (is.null(ignore_cols)){
     rest_indices <- which(!colnames(df) %in% c('eid'))
     rest <- colnames(df)[rest_indices]
@@ -47,7 +44,7 @@ rename_columns <- function(df,
   }
 
   ## in the default setting, we just change to old 'X'-based formatting
-  if (is.null(field_names) & is.null(new_cols)){
+  if (is.null(field_names) && is.null(new_cols)){
     # replace all 'p' with 'X', all '_' with '.', and remove all 'i'
     rest <- gsub('p', 'X', rest, fixed = TRUE)
     rest <- gsub('_', '.', rest, fixed = TRUE)
@@ -58,8 +55,8 @@ rename_columns <- function(df,
     rest <- ifelse(dot_counts == 1, paste0(rest, '.0'), rest)
 
     ## throw error if colnames are incorrectly specified
-  } else if (is.null(field_names) + is.null(new_cols) == 1 ||
-             (!field_names %in% colnames(colname_file) |
+  } else if (xor(is.null(field_names), is.null(new_cols)) ||
+             (!field_names %in% colnames(colname_file) ||
               !new_cols %in% colnames(colname_file))){
     stop('`field_names` and `new_cols` must either both be `NULL` or both present
          as `colnames` in `colname_file`.')
@@ -67,7 +64,7 @@ rename_columns <- function(df,
     ## condition when both `field_names` and `new_cols` are provided by user
   } else{
     # remove NA columns and throw warning
-    if (sum(is.na(colname_file[, c(field_names, new_cols)])) > 0){
+    if (anyNA(colname_file[, c(field_names, new_cols)])){
       colname_file <-
         colname_file[complete.cases(colname_file[, c(field_names, new_cols)]), ]
       warning('Some old/new column names were NA and were removed.')
@@ -75,7 +72,7 @@ rename_columns <- function(df,
     # remove all 'i'
     rest <- gsub('i', '', rest, fixed = TRUE)
     # build lookup vector
-    name_dict <- setNames(colname_file[[field_names]], colname_file[[new_cols]])
+    name_dict <- setNames(colname_file[[new_cols]], colname_file[[field_names]])
     # list of simple names to simplify column name later on
     new_names <- c()
     new_names_whole <- c()
@@ -86,7 +83,7 @@ rename_columns <- function(df,
       # the instance suffix
       suffix = stringr::str_replace(name, '^[^._]*', "")
       # fetch new name from dictionary
-      new_name <- names(name_dict[name_dict == name_simple])
+      new_name <- unname(name_dict[name_simple])
       new_names <- c(new_names, new_name)
       # paste together new name and replace old with new
       new_name_whole <- paste0(new_name, suffix)
