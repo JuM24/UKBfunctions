@@ -4,14 +4,14 @@
 #' to change column names of the data frame. It returns the data frame with
 #' changed column names.
 #' @param df Input data frame whose column names will be changed.
-#' @param colname_file_path Data frame that contains as separate columns both old
+#' @param colname_file Data frame that contains as separate columns both old
 #' and new column names of `df`.
 #' @param field_names Name of the column with UKB field names.
 #' @param new_cols Name of the column with new column names
 #' @param ignore_cols List of column names which should be ignored and their names
 #' left unchanged.
 #' @details
-#' One of two options is allowd:
+#' One of two options is allowed:
 #' 1: `field_names`, `new_cols`, and `colname_file_path` are `NULL`, in which case
 #' the RAP-based column naming will be replae with the "old" local naming.
 #' 2: `field_names`, `new_cols`, and `colname_file_path` are provided by the user,

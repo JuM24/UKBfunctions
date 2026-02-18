@@ -4,9 +4,9 @@
 #' with UKB synthetic data, and a data-type lookup table and returns a subset
 #' of the synthetic data.
 #' table exporter
-#' @param field_table A table of IDs required for the project; must contain a
-#' column with numerical field IDs as per the UKB showcase.
-#' @param data_dict A data-type lookup table that contains two columns:
+#' @param field_table .xlsx file. A table of IDs required for the project;
+#' must contain a column with numerical field IDs as per the UKB showcase.
+#' @param data_dict .csv file. A data-type lookup table that contains two columns:
 #' `field_id` which is a numerical field ID as per the UKB showcase and
 #' `type` which indicates the variable type for a given field - `datetime`,
 #' `int`, `real`, `string`, and `hes`; the latter refers to any fields that use

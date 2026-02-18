@@ -13,10 +13,10 @@ extract_from_synthetic(
 )
 }
 \arguments{
-\item{field_table}{A table of IDs required for the project; must contain a
-column with numerical field IDs as per the UKB showcase.}
+\item{field_table}{.xlsx file. A table of IDs required for the project;
+must contain a column with numerical field IDs as per the UKB showcase.}
 
-\item{data_dict}{A data-type lookup table that contains two columns:
+\item{data_dict}{.csv file. A data-type lookup table that contains two columns:
 \code{field_id} which is a numerical field ID as per the UKB showcase and
 \code{type} which indicates the variable type for a given field - \code{datetime},
 \code{int}, \code{real}, \code{string}, and \code{hes}; the latter refers to any fields that use

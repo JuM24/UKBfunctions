@@ -15,15 +15,15 @@ rename_columns(
 \arguments{
 \item{df}{Input data frame whose column names will be changed.}
 
+\item{colname_file}{Data frame that contains as separate columns both old
+and new column names of \code{df}.}
+
 \item{field_names}{Name of the column with UKB field names.}
 
 \item{new_cols}{Name of the column with new column names}
 
 \item{ignore_cols}{List of column names which should be ignored and their names
 left unchanged.}
-
-\item{colname_file_path}{Data frame that contains as separate columns both old
-and new column names of \code{df}.}
 }
 \description{
 \code{rename_columns} takes a data frame and a .csv file that acts as a dictionary
@@ -31,7 +31,7 @@ to change column names of the data frame. It returns the data frame with
 changed column names.
 }
 \details{
-One of two options is allowd:
+One of two options is allowed:
 1: \code{field_names}, \code{new_cols}, and \code{colname_file_path} are \code{NULL}, in which case
 the RAP-based column naming will be replae with the "old" local naming.
 2: \code{field_names}, \code{new_cols}, and \code{colname_file_path} are provided by the user,
