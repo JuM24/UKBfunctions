@@ -31,7 +31,7 @@ table_to_string <- function(file_path,
   # throw warning if any rows removed
   if (nrow(df) < n_before) {
     warning(sprintf(
-      "distinct() removed %d duplicate row(s) based on '%s'.",
+      'distinct() removed %d duplicate row(s) based on "%s".',
       n_before - nrow(df), id_column_name
     ), call. = FALSE)
   }
