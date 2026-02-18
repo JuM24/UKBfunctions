@@ -19,7 +19,7 @@ table_to_string <- function(file_path,
                             repeats_low,
                             repeats_high,
                             keep_assessments = 'all'
-                            ){
+){
 
   # import table
   df <- UKBfunctions::read_tbl(file_path)
@@ -39,28 +39,48 @@ table_to_string <- function(file_path,
   # remove rows with NA field IDs
   df <- df[!is.na(df[[id_column_name]]), ]
 
+  # throw warning if high is NA and low is not or vice-versa
+  bad_instances <- xor(is.na(df[[instances_low]]),  is.na(df[[instances_high]]))
+  bad_repeats   <- xor(is.na(df[[repeats_low]]),  is.na(df[[repeats_high]]))
+
+  if (any(bad_instances)) {
+    warning(sprintf(
+      'Inconsistent instances range in %d row(s): one of "%s"/"%s" is NA but the other is not.',
+      sum(bad_instances), instances_low, instances_high
+    ), call. = FALSE)
+  }
+
+  if (any(bad_repeats)) {
+    warning(sprintf(
+      'Inconsistent repeats range in %d row(s): one of "%s"/"%s" is NA but the other is not.',
+      sum(bad_repeats), repeats_low, repeats_high
+    ), call. = FALSE)
+  }
+
   # create array of field ID names
   id_list <- c()
 
   # add extra names for variables with multiple instances
   for (id_name in df[[id_column_name]]){
-    start_i <- df[df[[id_column_name]] == id_name, instances_low]
-    stop_i <- df[df[[id_column_name]] == id_name, instances_high]
+    row <- df[[id_column_name]] == id_name
 
-    start_a <- df[df[[id_column_name]] == id_name, repeats_low]
-    stop_a <- df[df[[id_column_name]] == id_name, repeats_high]
+    start_i <- as.integer(df[[instances_low]][row])
+    stop_i <- as.integer(df[[instances_high]][row])
+
+    start_a <- as.integer(df[[repeats_low]][row])
+    stop_a <- as.integer(df[[repeats_high]][row])
 
     # if no instances or id variable, then no suffix
-    if ((is.na(start_i) | is.na(stop_i)) & (is.na(start_a) | is.na(stop_a)) |
+    if (((is.na(start_i) || is.na(stop_i)) && (is.na(start_a) || is.na(stop_a))) ||
         id_name %in% c('id', 'eid')){
       id_list <- c(id_list, id_name)
 
       # if multiple instances, add digit for each
-    } else if (!is.na(start_i + stop_i) & stop_i >= start_i){
+    } else if (!is.na(start_i) && !is.na(stop_i) && stop_i >= start_i){
       for (i in seq(start_i, stop_i)){
         new_name <- paste0(id_name, '_i', as.character(i))
         # if multiple repeats, also add digit for each
-        if (stop_a > start_a){
+        if (!is.na(start_a) && !is.na(stop_a) && stop_a >= start_a){
           for (a in seq(start_a, stop_a)){
             new_name <- paste0(new_name, '_a', as.character(a))
             id_list <- c(id_list, new_name)
@@ -71,7 +91,7 @@ table_to_string <- function(file_path,
         }
       }
     } else{ # we add the new element even if no repeats
-      if (stop_a > start_a & !is.na(start_a) & !is.na(stop_a)){
+      if (!is.na(start_a) && !is.na(stop_a) && stop_a >= start_a){
         for (a in seq(start_a, stop_a)){
           new_name <- paste0(id_name, '_a', as.character(a))
           id_list <- c(id_list, new_name)
@@ -83,11 +103,12 @@ table_to_string <- function(file_path,
   }
 
   # add "p" to field id
-  id_list[id_list != 'eid'] <- paste0('p', id_list[id_list != 'eid'])
+  id_list[!id_list %in% c('eid', 'id')] <-
+    paste0('p', id_list[!id_list %in% c('eid', 'id')])
 
   # add option to keep just a single assessment instance
   if (keep_assessments == '0'){
-    mask <- grepl('i[1-9]', id_list)
+    mask <- grepl('_i(?!0)\\d+', id_list, perl = TRUE)
     id_list <- id_list[!mask]
   }
 
