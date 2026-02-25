@@ -36,27 +36,27 @@ extract_diagnoses <- function(df,
 
   if (raw == 1){
 
-    test <- masterfile_syn |>
+    df <- masterfile_syn |>
       dplyr::select(all_of(colname_id),
                     dplyr::starts_with(c('X41270.', 'X41280.',
                                          'X41271.', 'X41281.')))
 
     # remove NAs and change everything into characters
-    test <- test |>
+    df <- df |>
       dplyr::mutate(dplyr::across(-tidyselect::all_of(colname_id),
                                   as.character)) |>
       dplyr::mutate(dplyr::across(-tidyselect::all_of(colname_id),
                                   ~ dplyr::na_if(.x, '')))
 
 
-    # separate sources of test (ICD9 vs 10) and dates vs. diagnosis codes
-    icd9 <- test |> dplyr::select(all_of(colname_id),
+    # separate sources of df (ICD9 vs 10) and dates vs. diagnosis codes
+    icd9 <- df |> dplyr::select(all_of(colname_id),
                                   dplyr::starts_with('X41271.'))
-    icd9_date <- test |> dplyr::select(all_of(colname_id),
+    icd9_date <- df |> dplyr::select(all_of(colname_id),
                                        dplyr::starts_with('X41281.'))
-    icd10 <- test |> dplyr::select(all_of(colname_id),
+    icd10 <- df |> dplyr::select(all_of(colname_id),
                                    dplyr::starts_with('X41270.'))
-    icd10_date <- test |> dplyr::select(all_of(colname_id),
+    icd10_date <- df |> dplyr::select(all_of(colname_id),
                                         dplyr::starts_with('X41280.'))
 
     # transform to long-type format
@@ -84,7 +84,7 @@ extract_diagnoses <- function(df,
       dplyr::rename(date = value)
     icd10_date_long$column <- sub('^X41280\\.', '', icd10_date_long$column)
 
-    # combine all test
+    # combine all df
     icd9 <- merge(icd9_long, icd9_date_long,
                   by = c(colname_id, 'column'))
     icd9$column <- NULL; icd9$coding <- 'icd9'
@@ -92,7 +92,7 @@ extract_diagnoses <- function(df,
                    by = c(colname_id, 'column'))
     icd10$column <- NULL; icd10$coding <- 'icd10'
 
-    test <- rbind(icd9, icd10)
+    df <- rbind(icd9, icd10)
   } else if (raw == 0){
     # TODO
     stop('raw=0 not implemented')
@@ -100,7 +100,7 @@ extract_diagnoses <- function(df,
 
   if (!is.null(out_path)) {
     if (is.null(out_file_name)) stop('Provide `out_file_name` when `out_path` is set.')
-    write.csv(test, file.path(out_path, out_file_name), row.names = FALSE)
+    write.csv(df, file.path(out_path, out_file_name), row.names = FALSE)
   }
   return(df)
 }
