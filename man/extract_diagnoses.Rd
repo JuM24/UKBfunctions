@@ -6,9 +6,12 @@
 \usage{
 extract_diagnoses(
   df,
+  source,
   raw = 1,
+  invalid_dates = c("1900-01-01", "1901-01-01", "1902-02-02", "1903-03-03", "2037-07-07"),
   colname_id = "eid",
   code_table = NULL,
+  keep_all = TRUE,
   out_path = NULL,
   out_file_name = NULL
 )
@@ -17,14 +20,25 @@ extract_diagnoses(
 \item{df}{Input data frame with columns containing inpatient data. See details
 for formatting requirements.}
 
+\item{source}{Data source; either 'gp' or 'inpatient'.}
+
 \item{raw}{0 or 1; indicates whether the data is in its raw form - wide format
-with each participant as a row - or already in the long format.}
+with each participant as a row - or already in the long format. Valid only
+when working with inpatient diagnoses; GP diagnoses are always long.}
+
+\item{invalid_dates}{An array of strings, indicating the diagnosis dates
+that should be treated as \code{NA}; their indicators will also be \code{NA}.
+Each date must be class character in the date form '\%Y-\%m-\%d'.}
 
 \item{colname_id}{Character; the name of the column with participant IDs.}
 
-\item{code_table}{Path to a .csv file or a data frame with two columns:
-the first with diagnostic codes as strings and a second with the coding
-format, also as string. See details.}
+\item{code_table}{Path to a .csv file or a data frame that contains as the
+first two columns 1. diagnostic codes as strings and 2. the coding
+format as string. See details.}
+
+\item{keep_all}{logical; if TRUE, all instances of the same diagnosis - as
+indicated in the \code{code_table} - for any participant are kept; if FALSE,
+only the earliest one is kept.}
 
 \item{out_path}{An optional path to the folder to which the output
 data frame is to be written.}
