@@ -60,5 +60,5 @@ character, date of diagnosis as character, and coding as character. The coding
 indicates the coding system - ICD9, ICD10, etc. - for the diagnosis.
 
 The allowed inputs for coding systems in the \code{code_table} data frame are
-"icd9" and "icd10".
+"icd9", "icd10", "read2", "read3"
 }

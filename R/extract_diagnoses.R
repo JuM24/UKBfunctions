@@ -32,7 +32,7 @@
 #' indicates the coding system - ICD9, ICD10, etc. - for the diagnosis.
 #'
 #' The allowed inputs for coding systems in the `code_table` data frame are
-#' "icd9" and "icd10".
+#' "icd9", "icd10", "read2", "read3"
 #' @export
 
 extract_diagnoses <- function(df,
@@ -47,7 +47,7 @@ extract_diagnoses <- function(df,
                               out_path = NULL,
                               out_file_name = NULL){
 
-  if (raw == 1){
+  if (raw == 1 & source == 'inpatient'){
 
     df <- df |>
       dplyr::select(all_of(colname_id),
@@ -107,38 +107,87 @@ extract_diagnoses <- function(df,
 
     df <- rbind(icd9, icd10)
   }
+  if (source == 'gp' && raw == 1) stop("`raw = 1` is not valid when `source = 'gp'`; GP diagnoses are always in long format.")
 
-  # read in code table as .csv file or data frame and rename its first two columns
-  if (is.character(code_table)) code_table <- read.csv(code_table)
-  colnames(code_table)[1:2] <- c('code', 'source')
 
-  # retain only the relevant codes
-  df <- dplyr::filter(df,
-                      (coding == 'icd9'  & code %in% code_table$code[code_table$source == 'icd9']) |
-                      (coding == 'icd10' & code %in% code_table$code[code_table$source == 'icd10'])) |>
-    dplyr::mutate(date = dplyr::if_else(date %in% invalid_dates, NA_character_, date))
-  df$date <- as.Date(df$date, format = '%Y-%m-%d')
+  if (source == 'inpatient'){
+    # read in code table as .csv file or data frame and rename its first two columns
+    if (is.character(code_table)) code_table <- read.csv(code_table)
+    colnames(code_table)[1:2] <- c('code', 'source')
 
-  # sort by date so that distinct() keeps the earliest occurrence
-  df <- df |> dplyr::arrange(date)
-  if (!keep_all) {
-    df <- dplyr::distinct(df, .data[[colname_id]], code, coding, .keep_all = TRUE)
-  }
+    # retain only the relevant codes
+    df <- dplyr::filter(df,
+                        (coding == 'icd9'  & code %in% code_table$code[code_table$source == 'icd9']) |
+                          (coding == 'icd10' & code %in% code_table$code[code_table$source == 'icd10'])) |>
+      dplyr::mutate(date = dplyr::if_else(date %in% invalid_dates, NA_character_, date))
+    df$date <- as.Date(df$date, format = '%Y-%m-%d')
 
-  # count instances per code; optionally match codes with descriptions
-  code_table$n <- 0L
-  if (all(c('description', 'variable') %in% colnames(code_table))) {
-    df$description <- NA_character_
-    df$diagnosis   <- NA_character_
-  }
-  for (d in c('icd9', 'icd10')) {
-    for (code_val in code_table$code[code_table$source == d]) {
-      rows   <- df$coding == d & df$code == code_val
-      ct_row <- code_table$source == d & code_table$code == code_val
-      code_table$n[ct_row] <- sum(rows)
-      if (all(c('description', 'variable') %in% colnames(code_table))) {
-        df$description[rows] <- code_table$description[ct_row]
-        df$diagnosis[rows]   <- code_table$variable[ct_row]
+    # sort by date so that distinct() keeps the earliest occurrence
+    df <- df |> dplyr::arrange(date)
+    if (!keep_all) {
+      df <- dplyr::distinct(df, .data[[colname_id]], code, coding, .keep_all = TRUE)
+    }
+
+    # count instances per code; optionally match codes with descriptions
+    code_table$n <- 0L
+    if (all(c('description', 'variable') %in% colnames(code_table))) {
+      df$description <- NA_character_
+      df$diagnosis   <- NA_character_
+    }
+    for (d in c('icd9', 'icd10')) {
+      for (code_val in code_table$code[code_table$source == d]) {
+        rows   <- df$coding == d & df$code == code_val
+        ct_row <- code_table$source == d & code_table$code == code_val
+        code_table$n[ct_row] <- sum(rows)
+        if (all(c('description', 'variable') %in% colnames(code_table))) {
+          df$description[rows] <- code_table$description[ct_row]
+          df$diagnosis[rows]   <- code_table$variable[ct_row]
+        }
+      }
+    }
+  } else if (source == 'gp') {
+    # read in code table as .csv file or data frame and rename its first two columns
+    if (is.character(code_table)) code_table <- read.csv(code_table)
+    colnames(code_table)[1:2] <- c('code', 'source')
+
+    # reshape to long format: pivot read_2 / read_3 into code + coding columns
+    df <- df |>
+      dplyr::select(tidyselect::all_of(colname_id), event_dt, read_2, read_3) |>
+      tidyr::pivot_longer(c(read_2, read_3),
+                          names_to  = 'coding',
+                          values_to = 'code',
+                          values_drop_na = TRUE) |>
+      dplyr::mutate(coding = dplyr::recode(coding, read_2 = 'read2', read_3 = 'read3')) |>
+      dplyr::rename(date = event_dt)
+
+    # retain only the relevant codes
+    df <- dplyr::filter(df,
+                        (coding == 'read2' & code %in% code_table$code[code_table$source == 'read2']) |
+                        (coding == 'read3' & code %in% code_table$code[code_table$source == 'read3'])) |>
+      dplyr::mutate(date = dplyr::if_else(date %in% invalid_dates, NA_character_, date))
+    df$date <- as.Date(df$date, format = '%Y-%m-%d')
+
+    # sort by date so that distinct() keeps the earliest occurrence
+    df <- df |> dplyr::arrange(date)
+    if (!keep_all) {
+      df <- dplyr::distinct(df, .data[[colname_id]], code, coding, .keep_all = TRUE)
+    }
+
+    # count instances per code; optionally match codes with descriptions
+    code_table$n <- 0L
+    if (all(c('description', 'variable') %in% colnames(code_table))) {
+      df$description <- NA_character_
+      df$diagnosis   <- NA_character_
+    }
+    for (d in c('read2', 'read3')) {
+      for (code_val in code_table$code[code_table$source == d]) {
+        rows   <- df$coding == d & df$code == code_val
+        ct_row <- code_table$source == d & code_table$code == code_val
+        code_table$n[ct_row] <- sum(rows)
+        if (all(c('description', 'variable') %in% colnames(code_table))) {
+          df$description[rows] <- code_table$description[ct_row]
+          df$diagnosis[rows]   <- code_table$variable[ct_row]
+        }
       }
     }
   }
@@ -150,13 +199,3 @@ extract_diagnoses <- function(df,
   }
   return(df)
 }
-
-
-#gp diagnoses:
-#eid data_provider   event_dt read_2 read_3 value1 value2 value3
-#1 1707540             1 2000-01-01  635..   <NA>   <NA>   <NA>   <NA>
-#  2 1707540             1 2000-01-01  J11..   <NA>   <NA>   <NA>   <NA>
-#  3 1707540             1 2000-01-01  12E2.   <NA>   <NA>   <NA>   <NA>
-#  4 1707540             1 2000-01-01  452..   <NA>  33.94 80.319   <NA>
-#  5 1707540             1 1999-12-31  05K3.   <NA>   <NA>   <NA>   <NA>
-#  6 1707540             1 1999-12-31  7C1y.   <NA>   <NA>   <NA>   <NA>
