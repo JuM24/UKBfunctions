@@ -4,7 +4,13 @@
 \alias{disease_indicator}
 \title{Create a disease indicator from disease date}
 \usage{
-disease_indicator(df, colname, date_form = NULL, threshold_date = NULL)
+disease_indicator(
+  df,
+  colname,
+  date_form = NULL,
+  invalid_dates = NULL,
+  threshold_date = NULL
+)
 }
 \arguments{
 \item{df}{Input data frame.}
@@ -12,6 +18,9 @@ disease_indicator(df, colname, date_form = NULL, threshold_date = NULL)
 \item{colname}{Character; Name of the column with the dates for the event.}
 
 \item{date_form}{Character; format of the date.}
+
+\item{invalid_dates}{Array; strings of invalid dates in the form \code{date_form}.
+Events with these dates will be converted to NA.}
 
 \item{threshold_date}{Single character or vector of same length as \code{nrow(df)};
 should be in the same format as \code{colname}. If not \code{NULL}, events occurring
