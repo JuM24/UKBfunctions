@@ -7,11 +7,13 @@
 extract_diagnoses(
   df,
   source,
-  raw = 1,
+  wide = 1,
   invalid_dates = c("1900-01-01", "1901-01-01", "1902-02-02", "1903-03-03", "2037-07-07"),
+  date_form = "\%Y-\%m-\%d",
   colname_id = "eid",
   code_table = NULL,
   keep_all = TRUE,
+  return_code_table = FALSE,
   out_path = NULL,
   out_file_name = NULL
 )
@@ -22,7 +24,7 @@ for formatting requirements.}
 
 \item{source}{Data source; either 'gp' or 'inpatient'.}
 
-\item{raw}{0 or 1; indicates whether the data is in its raw form - wide format
+\item{wide}{0 or 1; indicates whether the data is in its wide format
 with each participant as a row - or already in the long format. Valid only
 when working with inpatient diagnoses; GP diagnoses are always long.}
 
@@ -30,15 +32,23 @@ when working with inpatient diagnoses; GP diagnoses are always long.}
 that should be treated as \code{NA}; their indicators will also be \code{NA}.
 Each date must be class character in the date form '\%Y-\%m-\%d'.}
 
+\item{date_form}{Character; the date format string passed to \code{\link[=as.Date]{as.Date()}},
+e.g. \code{'\%Y-\%m-\%d'} (default) or \code{'\%d/\%m/\%Y'}. The strings in \code{invalid_dates}
+must be provided in this same format.}
+
 \item{colname_id}{Character; the name of the column with participant IDs.}
 
 \item{code_table}{Path to a .csv file or a data frame that contains as the
 first two columns 1. diagnostic codes as strings and 2. the coding
 format as string. If \code{code_table} is \code{NULL}, no diagnoses are extracted.}
 
-\item{keep_all}{logical; if TRUE, all instances of the same diagnosis - as
+\item{keep_all}{Logical; if \code{TRUE}, all instances of the same diagnosis - as
 indicated in the \code{code_table} - for any participant are kept; if FALSE,
 only the earliest one is kept.}
+
+\item{return_code_table}{Logical; if \code{TRUE}, \code{code_table} the output is a list,
+with the second element the \code{code_table} with numbers of instances for each
+diagnosis.}
 
 \item{out_path}{An optional path to the folder to which the output
 data frame is to be written.}
@@ -51,10 +61,10 @@ don't forget to include '.csv' at the end.}
 with select inpatient information.
 }
 \details{
-If \code{raw = 1}, \code{df} must contain data on UKB field IDs 41270, 41271, 41280,
+If \code{wide = 1}, \code{df} must contain data on UKB field IDs 41270, 41271, 41280,
 and 41281. The column names must be in the form X.ID.0.a, where X is the
 letter "X", ID is the field ID, and a is the instance.
-#' E.g., "X41270.0.1", "X41270.0.2",etc. Alternatively, if \code{raw = 0}, \code{df}
+#' E.g., "X41270.0.1", "X41270.0.2",etc. Alternatively, if \code{wide = 0}, \code{df}
 must contain 4 columns: participant ID column as character, diagnostic code as
 character, date of diagnosis as character, and coding as character. The coding
 indicates the coding system - ICD9, ICD10, etc. - for the diagnosis.

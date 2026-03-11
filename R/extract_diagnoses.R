@@ -5,28 +5,34 @@
 #' @param df Input data frame with columns containing inpatient data. See details
 #' for formatting requirements.
 #' @param source Data source; either 'gp' or 'inpatient'.
-#' @param raw 0 or 1; indicates whether the data is in its raw form - wide format
+#' @param wide 0 or 1; indicates whether the data is in its wide format
 #' with each participant as a row - or already in the long format. Valid only
 #' when working with inpatient diagnoses; GP diagnoses are always long.
 #' @param invalid_dates An array of strings, indicating the diagnosis dates
 #' that should be treated as `NA`; their indicators will also be `NA`.
 #' Each date must be class character in the date form '%Y-%m-%d'.
+#' @param date_form Character; the date format string passed to [as.Date()],
+#' e.g. `'%Y-%m-%d'` (default) or `'%d/%m/%Y'`. The strings in `invalid_dates`
+#' must be provided in this same format.
 #' @param colname_id Character; the name of the column with participant IDs.
 #' @param code_table Path to a .csv file or a data frame that contains as the
 #' first two columns 1. diagnostic codes as strings and 2. the coding
 #' format as string. If `code_table` is `NULL`, no diagnoses are extracted.
-#' @param keep_all logical; if TRUE, all instances of the same diagnosis - as
+#' @param keep_all Logical; if `TRUE`, all instances of the same diagnosis - as
 #' indicated in the `code_table` - for any participant are kept; if FALSE,
 #' only the earliest one is kept.
+#' @param return_code_table Logical; if `TRUE`, `code_table` the output is a list,
+#' with the second element the `code_table` with numbers of instances for each
+#' diagnosis.
 #' @param out_path An optional path to the folder to which the output
 #' data frame is to be written.
 #' @param out_file_name The file name for the data frame if it is to be exported;
 #' don't forget to include '.csv' at the end.
 #' @details
-#' If `raw = 1`, `df` must contain data on UKB field IDs 41270, 41271, 41280,
+#' If `wide = 1`, `df` must contain data on UKB field IDs 41270, 41271, 41280,
 #' and 41281. The column names must be in the form X.ID.0.a, where X is the
 #' letter "X", ID is the field ID, and a is the instance.
-#' #' E.g., "X41270.0.1", "X41270.0.2",etc. Alternatively, if `raw = 0`, `df`
+#' #' E.g., "X41270.0.1", "X41270.0.2",etc. Alternatively, if `wide = 0`, `df`
 #' must contain 4 columns: participant ID column as character, diagnostic code as
 #' character, date of diagnosis as character, and coding as character. The coding
 #' indicates the coding system - ICD9, ICD10, etc. - for the diagnosis.
@@ -37,17 +43,19 @@
 
 extract_diagnoses <- function(df,
                               source,
-                              raw = 1,
+                              wide = 1,
                               invalid_dates = c('1900-01-01', '1901-01-01',
                                                 '1902-02-02', '1903-03-03',
                                                 '2037-07-07'),
+                              date_form = '%Y-%m-%d',
                               colname_id = 'eid',
                               code_table = NULL,
                               keep_all = TRUE,
+                              return_code_table = FALSE,
                               out_path = NULL,
                               out_file_name = NULL){
 
-  if (raw == 1 & source == 'inpatient'){
+  if (wide == 1 & source == 'inpatient'){
 
     df <- df |>
       dplyr::select(all_of(colname_id),
@@ -107,7 +115,7 @@ extract_diagnoses <- function(df,
 
     df <- rbind(icd9, icd10)
   }
-  if (source == 'gp' && raw == 1) stop("`raw = 1` is not valid when `source = 'gp'`; GP diagnoses are always in long format.")
+  if (source == 'gp' && wide == 1) stop("`wide = 1` is not valid when `source = 'gp'`; GP diagnoses are always in long format.")
 
   if (!is.null(code_table)){
     if (source == 'inpatient'){
@@ -120,7 +128,7 @@ extract_diagnoses <- function(df,
                           (coding == 'icd9'  & code %in% code_table$code[code_table$source == 'icd9']) |
                             (coding == 'icd10' & code %in% code_table$code[code_table$source == 'icd10'])) |>
         dplyr::mutate(date = dplyr::if_else(date %in% invalid_dates, NA_character_, date))
-      df$date <- as.Date(df$date, format = '%Y-%m-%d')
+      df$date <- as.Date(df$date, format = date_form)
 
       # sort by date so that distinct() keeps the earliest occurrence
       df <- df |> dplyr::arrange(date)
@@ -158,14 +166,15 @@ extract_diagnoses <- function(df,
                             values_to = 'code',
                             values_drop_na = TRUE) |>
         dplyr::mutate(coding = dplyr::recode(coding, read_2 = 'read2', read_3 = 'read3')) |>
-        dplyr::rename(date = event_dt)
+        dplyr::rename(date = event_dt) |>
+        dplyr::mutate(date = as.character(date)) # to allow NA_character inclusion below
 
       # retain only the relevant codes
       df <- dplyr::filter(df,
                           (coding == 'read2' & code %in% code_table$code[code_table$source == 'read2']) |
                             (coding == 'read3' & code %in% code_table$code[code_table$source == 'read3'])) |>
         dplyr::mutate(date = dplyr::if_else(date %in% invalid_dates, NA_character_, date))
-      df$date <- as.Date(df$date, format = '%Y-%m-%d')
+      df$date <- as.Date(df$date, format = date_form)
 
       # sort by date so that distinct() keeps the earliest occurrence
       df <- df |> dplyr::arrange(date)
@@ -193,11 +202,11 @@ extract_diagnoses <- function(df,
     }
   }
 
-
-
   if (!is.null(out_path)) {
     if (is.null(out_file_name)) stop('Provide `out_file_name` when `out_path` is set.')
     write.csv(df, file.path(out_path, out_file_name), row.names = FALSE)
   }
+  # potentially return the code table populated with number of diagnoses
+  if (return_code_table) return(list(diagnoses = df, code_table = code_table))
   return(df)
 }
