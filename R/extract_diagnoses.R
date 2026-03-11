@@ -113,7 +113,8 @@ extract_diagnoses <- function(df,
                    by = c(colname_id, 'column'))
     icd10$column <- NULL; icd10$coding <- 'icd10'
 
-    df <- rbind(icd9, icd10)
+    df <- rbind(icd9, icd10) %>%
+      select(eid, date, coding, code)
   }
   if (source == 'gp' && wide == 1) stop("`wide = 1` is not valid when `source = 'gp'`; GP diagnoses are always in long format.")
 
