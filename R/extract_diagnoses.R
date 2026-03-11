@@ -179,7 +179,7 @@ extract_diagnoses <- function(df,
       # sort by date so that distinct() keeps the earliest occurrence
       df <- df |> dplyr::arrange(date)
       if (!keep_all) {
-        df <- dplyr::distinct(df, .data[[colname_id]], code, coding, .keep_all = TRUE)
+        df <- dplyr::distinct(df, .data[[colname_id]], .keep_all = TRUE)
       }
 
       # count instances per code; optionally match codes with descriptions
