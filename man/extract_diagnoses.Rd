@@ -34,7 +34,7 @@ Each date must be class character in the date form '\%Y-\%m-\%d'.}
 
 \item{code_table}{Path to a .csv file or a data frame that contains as the
 first two columns 1. diagnostic codes as strings and 2. the coding
-format as string. See details.}
+format as string. If \code{code_table} is \code{NULL}, no diagnoses are extracted.}
 
 \item{keep_all}{logical; if TRUE, all instances of the same diagnosis - as
 indicated in the \code{code_table} - for any participant are kept; if FALSE,
