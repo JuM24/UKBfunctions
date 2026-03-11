@@ -12,9 +12,9 @@ remove_outliers(x, method, var_metric)
 \item{method}{Character; indicates which statistic is used to calculate the
 spread. Must be either 'sd' or 'iqr'.}
 
-\item{var_metric}{Numerical; indicates the minimum number of variance units -
+\item{var_metric}{Numerical; indicates the threshold of variance units -
 standard deviations or interquartile ranges - from the mean/median that are
-considered outliers.}
+after which observations are considered outliers.}
 }
 \description{
 \code{remove_outliers} takes an array, sets outliers to NA, and returns the array.

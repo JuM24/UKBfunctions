@@ -71,12 +71,13 @@ get_aux_vars <- function(df){
 
   # categorise education
   aux_vars <- aux_vars %>%
-    mutate(education_0 = apply(select(., starts_with('X6138.0')), 1, function(x) education_classify(x)))
+    mutate(education_0 = apply(select(., starts_with('X6138.0')), 1,
+                               function(x) ukb_reclassify(x, 6138)))
 
   # categorise physical activity
   aux_vars <- aux_vars %>%
-    mutate(across(starts_with('X6164.0'), ~ sapply(., phys_act_classify))) %>%
-    mutate(phys_act = pmax(X6164.0.0, X6164.0.1, X6164.0.2, X6164.0.3, X6164.0.4, na.rm = TRUE))
+    mutate(phys_act = apply(select(., starts_with('X6164.0')), 1,
+                            function(x) ukb_reclassify(x, 6164)))
 
   # pollution: average NO2 2005-2007
   aux_vars$pol_no2_05_07 <- rowMeans(aux_vars[, c('X24016.0.0', 'X24017.0.0',
