@@ -113,6 +113,7 @@ matchit_comparison <- function(df,
       # whether progress should be printed
       if (isTRUE(verbose)) {
         msg_dist <- if (is.na(distance)) '' else paste0('/', distance)
+        message()
         if(!isTRUE(imputed)){
           message('[MatchIt] ', method, msg_dist)
         } else if (isTRUE(imputed)){
