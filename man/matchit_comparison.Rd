@@ -19,6 +19,8 @@ matchit_comparison(
   nnet_MaxNWts = 1e+06,
   cardinality_solver = "highs",
   cardinality_time = 1200,
+  cardinality_tols = 0.05,
+  cem_cutpoints = "sturges",
   smd_thresh
 )
 }
@@ -59,6 +61,13 @@ See \code{nnet::nnet}.}
 
 \item{cardinality_time}{The max. time before optimisation aborts.}
 
+\item{cardinality_tols}{Tolerance for balance constraints in cardinality
+matching; increase to relax feasibility. Passed as \code{tols} to \code{matchit}.}
+
+\item{cem_cutpoints}{Cutpoints specification for CEM matching. Accepts a
+string algorithm name (e.g. \code{"sturges"}, \code{"fd"}, \code{"scott"}) or a named list
+of numeric breakpoints per variable. Passed as \code{cutpoints} to \code{matchit}.}
+
 \item{smd_thresh}{The threshold for the max. SMD that implies balance.}
 }
 \description{
@@ -68,5 +77,4 @@ and contains matchit objects to enable further exploration and plotting.
 'metrics_base' and 'metrics_int' are simplified tables with some select metrics
 for the variables in the model and their interactions and 2-order exponentials,
 respectively.
-duplicated elements replaced by NAs.
 }

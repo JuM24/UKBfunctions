@@ -6,7 +6,6 @@
 #' 'metrics_base' and 'metrics_int' are simplified tables with some select metrics
 #' for the variables in the model and their interactions and 2-order exponentials,
 #' respectively.
-#' duplicated elements replaced by NAs.
 #' @param df Data frame or `mids` object containing the to-be-matched data.
 #' @param exposure A string indicating the name of the column with the exposure
 #' variable; must be binary.
@@ -29,6 +28,11 @@
 #' See `nnet::nnet`.
 #' @param cardinality_solver The name of the solver for the optimisation problem.
 #' @param cardinality_time The max. time before optimisation aborts.
+#' @param cardinality_tols Tolerance for balance constraints in cardinality
+#' matching; increase to relax feasibility. Passed as `tols` to `matchit`.
+#' @param cem_cutpoints Cutpoints specification for CEM matching. Accepts a
+#' string algorithm name (e.g. `"sturges"`, `"fd"`, `"scott"`) or a named list
+#' of numeric breakpoints per variable. Passed as `cutpoints` to `matchit`.
 #' @param smd_thresh The threshold for the max. SMD that implies balance.
 #' @export
 
@@ -47,6 +51,8 @@ matchit_comparison <- function(df,
                                nnet_MaxNWts = 10e5,
                                cardinality_solver = 'highs',
                                cardinality_time = 1200,
+                               cardinality_tols = 0.05,
+                               cem_cutpoints = 'sturges',
                                smd_thresh){
 
   ## set up parallel processing if requested
@@ -73,6 +79,8 @@ matchit_comparison <- function(df,
       distance = dplyr::if_else(method %in% c('cem', 'cardinality'), NA_character_, distance),
       solver = dplyr::if_else(method == 'cardinality', cardinality_solver, NA_character_),
       time = dplyr::if_else(method == 'cardinality', cardinality_time, NA_real_),
+      tols = dplyr::if_else(method == 'cardinality', cardinality_tols, NA_real_),
+      cutpoints = lapply(method, function(m) if (m == 'cem') cem_cutpoints else NULL),
       # special distance options for certain algorithms
       distance_options = dplyr::case_when(
         distance == 'nnet' ~ list(list(size = nnet_size, MaxNWts = nnet_MaxNWts)),
@@ -87,10 +95,9 @@ matchit_comparison <- function(df,
   ## Separate approaches for non-MI and MI
 
   # specify arguments for matchit runner
-  run_matching <- purrr::possibly(
-
-    function(spec_id, method, distance, estimand,
-             distance_options, solver, time) {
+  run_matching <- function(spec_id, method, distance, estimand,
+                           distance_options, solver, time, tols, cutpoints) {
+    tryCatch({
 
       # if seed set by user, add the spec-specific ID
       if(!is.null(random_seed)) {
@@ -124,6 +131,8 @@ matchit_comparison <- function(df,
       if (!is.null(distance_options)) args$distance.options <- distance_options
       if (!is.na(solver) && method == 'cardinality') args$solver <- solver
       if (!is.na(time) && method == 'cardinality') args$time <- time
+      if (!is.na(tols) && method == 'cardinality') args$tols <- tols
+      if (!is.null(cutpoints) && method == 'cem') args$cutpoints <- cutpoints
       if (isTRUE(imputed)) args$approach <- 'within'
 
       # capture warnings
@@ -150,9 +159,15 @@ matchit_comparison <- function(df,
 
       # return list of matchit object, runtime, and warnings
       list(m = fit, runtime_sec = unname(t[['elapsed']]), warnings = warn)
-    },
-    otherwise = NULL
-  )
+
+    }, error = function(e) {
+      if (isTRUE(verbose)) {
+        msg_dist <- if (is.na(distance)) '' else paste0('/', distance)
+        message('[FAILED] ', method, msg_dist, ': ', e$message)
+      }
+      NULL
+    })
+  }
 
   ## define a safe bal_tab function to avoid breaking if one approach errors
   bal_tab_safe <- purrr::safely(
@@ -173,7 +188,7 @@ matchit_comparison <- function(df,
       out = if (cores > 1) {
         furrr::future_pmap(
           list(spec_id, method, distance, estimand, distance_options, solver,
-               time),
+               time, tols, cutpoints),
           run_matching,
           .options = furrr::furrr_options(
             seed = if (is.null(random_seed)) TRUE else random_seed)
@@ -182,7 +197,7 @@ matchit_comparison <- function(df,
         # sequential
         purrr::pmap(
           list(spec_id, method, distance, estimand, distance_options, solver,
-               time),
+               time, tols, cutpoints),
           run_matching
         )
       },
