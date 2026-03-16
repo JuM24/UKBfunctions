@@ -139,27 +139,31 @@ matchit_comparison <- function(df,
       # capture warnings
       warn <- character(0)
 
-      t <- system.time({ # used to time each matching run
-        # used to catch (and save) warning messages
-        fit <- withCallingHandlers(
-          {
+      t0 <- proc.time() # used to time each matching run
+      # used to catch (and save) warning messages
+      fit <- withCallingHandlers(
+        {
 
-            if(!isTRUE(imputed)){
-              do.call(MatchIt::matchit, args)
-            } else if (isTRUE(imputed)){
-              do.call(MatchThem::matchthem, args)
-            }
-          },
-          # this is called when a warning occurs
-          warning = function(w){
-            # extract the warning text; use '<<-' to assign to parent object outside function
-            warn <<- c(warn, conditionMessage(w))
+          if(!isTRUE(imputed)){
+            do.call(MatchIt::matchit, args)
+          } else if (isTRUE(imputed)){
+            do.call(MatchThem::matchthem, args)
           }
-        )
-      })
+        },
+        # this is called when a warning occurs
+        warning = function(w){
+          # extract the warning text; use '<<-' to assign to parent object outside function
+          warn <<- c(warn, conditionMessage(w))
+        }
+      )
+      elapsed <- unname((proc.time() - t0)[['elapsed']])
+
+      if (isTRUE(verbose)) {
+        message('  -> ', round(elapsed, 1), 's')
+      }
 
       # return list of matchit object, runtime, and warnings
-      list(m = fit, runtime_sec = unname(t[['elapsed']]), warnings = warn)
+      list(m = fit, runtime_sec = elapsed, warnings = warn)
 
     }, error = function(e) {
       if (isTRUE(verbose)) {
