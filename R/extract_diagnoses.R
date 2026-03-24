@@ -38,7 +38,8 @@
 #' indicates the coding system - ICD9, ICD10, etc. - for the diagnosis.
 #'
 #' The allowed inputs for coding systems in the `code_table` data frame are
-#' "icd9", "icd10", "read2", "read3"
+#' "icd9", "icd10", "read2", "read3", "snomed". The code table need not
+#' contain all coding systems; any subset is accepted.
 #' @export
 
 extract_diagnoses <- function(df,
@@ -113,8 +114,8 @@ extract_diagnoses <- function(df,
                    by = c(colname_id, 'column'))
     icd10$column <- NULL; icd10$coding <- 'icd10'
 
-    df <- rbind(icd9, icd10) %>%
-      select(eid, date, coding, code)
+    df <- rbind(icd9, icd10) |>
+      dplyr::select(eid, date, coding, code)
   }
   if (source == 'gp' && wide == 1) stop("`wide = 1` is not valid when `source = 'gp'`; GP diagnoses are always in long format.")
 
@@ -143,7 +144,7 @@ extract_diagnoses <- function(df,
         df$description <- NA_character_
         df$diagnosis   <- NA_character_
       }
-      for (d in c('icd9', 'icd10')) {
+      for (d in intersect(c('icd9', 'icd10'), code_table$source)) {
         for (code_val in code_table$code[code_table$source == d]) {
           rows   <- df$coding == d & df$code == code_val
           ct_row <- code_table$source == d & code_table$code == code_val
@@ -160,20 +161,24 @@ extract_diagnoses <- function(df,
       colnames(code_table)[1:2] <- c('code', 'source')
 
       # reshape to long format: pivot read_2 / read_3 into code + coding columns
+      # TODO: when SNOMED data becomes available in UKB GP releases, add the
+      #       snomed column to the select() and pivot_longer() below.
       df <- df |>
         dplyr::select(tidyselect::all_of(colname_id), event_dt, read_2, read_3) |>
         tidyr::pivot_longer(c(read_2, read_3),
                             names_to  = 'coding',
                             values_to = 'code',
                             values_drop_na = TRUE) |>
+        # TODO: when SNOMED column is added above, add snomed = 'snomed' to recode().
         dplyr::mutate(coding = dplyr::recode(coding, read_2 = 'read2', read_3 = 'read3')) |>
         dplyr::rename(date = event_dt) |>
         dplyr::mutate(date = as.character(date)) # to allow NA_character inclusion below
 
       # retain only the relevant codes
       df <- dplyr::filter(df,
-                          (coding == 'read2' & code %in% code_table$code[code_table$source == 'read2']) |
-                            (coding == 'read3' & code %in% code_table$code[code_table$source == 'read3'])) |>
+                          (coding == 'read2'  & code %in% code_table$code[code_table$source == 'read2']) |
+                            (coding == 'read3'  & code %in% code_table$code[code_table$source == 'read3']) |
+                            (coding == 'snomed' & code %in% code_table$code[code_table$source == 'snomed'])) |>
         dplyr::mutate(date = dplyr::if_else(date %in% invalid_dates, NA_character_, date))
       df$date <- as.Date(df$date, format = date_form)
 
@@ -189,7 +194,7 @@ extract_diagnoses <- function(df,
         df$description <- NA_character_
         df$diagnosis   <- NA_character_
       }
-      for (d in c('read2', 'read3')) {
+      for (d in intersect(c('read2', 'read3', 'snomed'), code_table$source)) {
         for (code_val in code_table$code[code_table$source == d]) {
           rows   <- df$coding == d & df$code == code_val
           ct_row <- code_table$source == d & code_table$code == code_val

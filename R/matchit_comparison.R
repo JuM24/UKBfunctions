@@ -1,7 +1,7 @@
 #' Compare performance of multiple distance-method combinations of matching
 #'
 #' `matchit_comparison` returns a list, that contains three lists, all with
-#' different matching approaches as rows. 'Results' is the most comprehensive
+#' different matching approaches as rows. 'results' is the most comprehensive
 #' and contains matchit objects to enable further exploration and plotting.
 #' 'metrics_base' and 'metrics_int' are simplified tables with some select metrics
 #' for the variables in the model and their interactions and 2-order exponentials,
