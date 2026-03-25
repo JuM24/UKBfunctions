@@ -6,44 +6,72 @@
 \usage{
 get_data_provider(
   df,
-  hesin_path,
-  gp_regs_path,
-  gp_clinical_path,
+  hesin_df,
+  gp_regs_df,
+  gp_clinical_df,
   cens_dates,
-  type,
+  type = "freq",
   fill_NAs = NULL,
-  random_seed
+  random_seed = NULL,
+  invalid_dates = NULL,
+  gp_fetch_dates = list(england_vision = as.Date("2017-06-30"), scotland =
+    as.Date("2017-05-31"), england_tpp = as.Date("2016-08-31"), wales =
+    as.Date("2017-09-30"))
 )
 }
 \arguments{
-\item{df}{The input data frame.}
+\item{df}{The input data frame containing columns \code{eid}, \verb{X40022.0.*}, and
+\code{X191.0.0} (loss to follow-up date).}
 
-\item{hesin_path}{Path to the "hesin.txt" file, UKB category 2006.}
+\item{hesin_df}{Data frame from UKB category 2006 (hesin.txt), with columns
+\code{eid}, \code{epistart}, and \code{dsource}.}
 
-\item{gp_regs_path}{Path to GP registration records, UKB field ID 42038.}
+\item{gp_regs_df}{Data frame of GP registration records (UKB field 42038),
+with columns \code{eid}, \code{data_provider}, \code{reg_date}, and \code{deduct_date}.}
 
-\item{gp_clinical_path}{Path to GP clinical event records, UKB field ID 42040.}
+\item{gp_clinical_df}{Data frame of GP clinical event records (UKB field
+42040), with columns \code{eid}, \code{data_provider}, and \code{event_dt}.}
 
-\item{cens_dates}{A list of three dates in the form dd.mm.YYYY, corresponding
-to the censoring dates for England, Scotland, and Wales, as per UKB documentation.}
+\item{cens_dates}{A character vector of three dates in the form YYYY-mm-dd,
+corresponding to the censoring dates for England, Scotland, and Wales,
+as per UKB documentation.}
 
-\item{type}{Determines the approach used to assign the data provider. 'last'
+\item{type}{Determines the approach used to assign the data provider. \code{'last'}
 assigns the last data provider that the participant was in contact with,
-'freq' assigns the data provider that was the most frequent across the entire
-period of electronic records.}
+\code{'freq'} assigns the data provider that was the most frequent across the
+entire period of electronic records.}
 
-\item{fill_NAs}{For some participants - those that never went to either the
-hospital or the GP - the data provider will not be found. This argument
-determines how NAs should be handled. \code{NULL} leaves the NAs, 'random'
-assigns a random data provider from the non-NAs, while 'HES', 'SMR', and
-'PEDW' replace all NAs with the censoring date of the corresponding data provider.}
+\item{fill_NAs}{For some participants — those that never went to either the
+hospital or the GP — the data provider will not be found. This argument
+determines how NAs should be handled. \code{NULL} leaves the NAs, \code{'random'}
+assigns a random data provider from the non-NAs, while \code{'HES'}, \code{'SMR'},
+and \code{'PEDW'} replace all NAs with the corresponding data provider.}
 
 \item{random_seed}{Relevant only when \code{fill_NAs = 'random'}; the random seed
 set before the sampling.}
+
+\item{invalid_dates}{Optional character vector of dates in ISO format
+(YYYY-MM-DD) to treat as invalid in GP registration data (set to NA).}
+
+\item{gp_fetch_dates}{Named list of four Date values for imputing missing
+GP deduct dates, with elements \code{england_vision}, \code{scotland}, \code{england_tpp},
+and \code{wales}. Defaults to the original UKB data-fetch dates.}
+}
+\value{
+A data frame with columns \code{eid}, \code{data_provider}, \code{censor_date},
+and \code{loss_to_follow_up_date}.
 }
 \description{
-\code{get_data_provider} Takes an input data frame with the UKB field id 40022
-and 191, path names for registration and clinical event files, and a list
-of dates to output a data frame with last data provider recorded in the record,
-the most frequent data provider recorded in the record, and the censoring date.
+\code{get_data_provider} takes an input data frame with UKB fields 40022 and 191,
+data frames for hospital episode statistics, GP registrations, and GP clinical
+events, and a vector of censoring dates to output a data frame with the
+assigned data provider (by nation) and the censoring date per participant.
+}
+\details{
+The function first attempts to assign a data provider from inpatient field
+40022. For participants with multiple providers or no provider recorded, it
+resolves using hospital episode records (\code{hesin_df}). Remaining gaps are
+filled using GP registration data (\code{gp_regs_df}) and, failing that, GP
+clinical event data (\code{gp_clinical_df}). Data provider codes are harmonised
+to nation-level labels: HES (England), SMR (Scotland), PEDW (Wales).
 }
