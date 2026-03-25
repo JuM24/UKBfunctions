@@ -20,9 +20,9 @@
 #'   with columns `eid`, `data_provider`, `reg_date`, and `deduct_date`.
 #' @param gp_clinical_df Data frame of GP clinical event records (UKB field
 #'   42040), with columns `eid`, `data_provider`, and `event_dt`.
-#' @param cens_dates A character vector of three dates in the form YYYY-mm-dd,
-#'   corresponding to the censoring dates for England, Scotland, and Wales,
-#'   as per UKB documentation.
+#' @param inpatient_cens_dates A named list of three Date values with elements
+#'   `HES` (England), `SMR` (Scotland), and `PEDW` (Wales), giving the inpatient
+#'   censoring date for each nation as per UKB documentation.
 #' @param type Determines the approach used to assign the data provider. `'last'`
 #'   assigns the last data provider that the participant was in contact with,
 #'   `'freq'` assigns the data provider that was the most frequent across the
@@ -36,7 +36,7 @@
 #'   set before the sampling.
 #' @param invalid_dates Optional character vector of dates in ISO format
 #'   (YYYY-MM-DD) to treat as invalid in GP registration data (set to NA).
-#' @param gp_fetch_dates Named list of four Date values for imputing missing
+#' @param gp_cens_dates Named list of four Date values for imputing missing
 #'   GP deduct dates, with elements `england_vision`, `scotland`, `england_tpp`,
 #'   and `wales`. Defaults to the original UKB data-fetch dates.
 #' @return A data frame with columns `eid`, `data_provider`, `censor_date`,
@@ -47,12 +47,12 @@ get_data_provider <- function(df,
                               hesin_df,
                               gp_regs_df,
                               gp_clinical_df,
-                              cens_dates,
+                              inpatient_cens_dates,
                               type = 'freq',
                               fill_NAs = NULL,
                               random_seed = NULL,
                               invalid_dates = NULL,
-                              gp_fetch_dates = list(
+                              gp_cens_dates = list(
                                 england_vision = as.Date('2017-06-30'),
                                 scotland       = as.Date('2017-05-31'),
                                 england_tpp    = as.Date('2016-08-31'),
@@ -149,10 +149,10 @@ get_data_provider <- function(df,
   # people with registrations but without de-registrations were still registered
   # with their latest GP at time of data fetch, so get dates of data fetch
   # (1=England(Vision), 2=Scotland, 3=England (TPP), 4=Wales)
-  gp_reg_flux$deduct_date[is.na(gp_reg_flux$deduct_date) & gp_reg_flux$data_provider == '1'] <- gp_fetch_dates$england_vision
-  gp_reg_flux$deduct_date[is.na(gp_reg_flux$deduct_date) & gp_reg_flux$data_provider == '2'] <- gp_fetch_dates$scotland
-  gp_reg_flux$deduct_date[is.na(gp_reg_flux$deduct_date) & gp_reg_flux$data_provider == '3'] <- gp_fetch_dates$england_tpp
-  gp_reg_flux$deduct_date[is.na(gp_reg_flux$deduct_date) & gp_reg_flux$data_provider == '4'] <- gp_fetch_dates$wales
+  gp_reg_flux$deduct_date[is.na(gp_reg_flux$deduct_date) & gp_reg_flux$data_provider == '1'] <- gp_cens_dates$england_vision
+  gp_reg_flux$deduct_date[is.na(gp_reg_flux$deduct_date) & gp_reg_flux$data_provider == '2'] <- gp_cens_dates$scotland
+  gp_reg_flux$deduct_date[is.na(gp_reg_flux$deduct_date) & gp_reg_flux$data_provider == '3'] <- gp_cens_dates$england_tpp
+  gp_reg_flux$deduct_date[is.na(gp_reg_flux$deduct_date) & gp_reg_flux$data_provider == '4'] <- gp_cens_dates$wales
   gp_reg_flux$total_time <- as.numeric((difftime(gp_reg_flux$deduct_date, gp_reg_flux$reg_date, units = 'days')))/365.25
 
   # for registrations of people that changed data providers,
@@ -227,17 +227,21 @@ get_data_provider <- function(df,
 
 
   # create file linking the data providers with user-provided dates
-  date_frame <- data.frame(cbind(matrix(cens_dates), matrix(c('HES', 'SMR', 'PEDW'))))
+  date_frame <- data.frame(
+    censor_date   = do.call(c, inpatient_cens_dates[c('HES', 'SMR', 'PEDW')]),
+    data_provider = c('HES', 'SMR', 'PEDW'),
+    stringsAsFactors = FALSE
+  )
 
   if (type == 'last'){
-    colnames(date_frame) <- c('censor_date', 'data_provider_inpatient_last')
+    colnames(date_frame)[2] <- 'data_provider_inpatient_last'
     data_provider_last <- merge(data_provider_last, date_frame,
                                 by = 'data_provider_inpatient_last')
     output_df <- data_provider_last |>
       dplyr::rename(data_provider = data_provider_inpatient_last) |>
       dplyr::select(eid, data_provider, censor_date)
   } else if (type == 'freq'){
-    colnames(date_frame) <- c('censor_date', 'data_provider_inpatient_freq')
+    colnames(date_frame)[2] <- 'data_provider_inpatient_freq'
     data_provider_freq <- merge(data_provider_freq, date_frame,
                                 by = 'data_provider_inpatient_freq')
     output_df <- data_provider_freq |>
@@ -281,7 +285,7 @@ get_data_provider <- function(df,
       date_frame$censor_date[date_frame[, 2] == 'PEDW']
   }
 
-  output_df$censor_date <- as.Date(output_df$censor_date, format = '%d.%m.%Y')
+  output_df$censor_date <- as.Date(output_df$censor_date)
 
   return(output_df)
 }
