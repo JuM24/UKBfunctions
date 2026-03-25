@@ -45,14 +45,18 @@ rename_columns <- function(df,
 
   ## in the default setting, we just change to old 'X'-based formatting
   if (is.null(field_names) && is.null(new_cols)){
-    # replace all 'p' with 'X', all '_' with '.', and remove all 'i'
-    rest <- gsub('p', 'X', rest, fixed = TRUE)
-    rest <- gsub('_', '.', rest, fixed = TRUE)
-    rest <- gsub('[ia]', '', rest)
-    # add repetition digit if lacking
-    dot_counts <- lengths(regmatches(rest, gregexpr('\\.', rest)))
-    rest <- ifelse(dot_counts == 0, paste0(rest, '.0.0'), rest)
-    rest <- ifelse(dot_counts == 1, paste0(rest, '.0'), rest)
+    # semantically parse p<field>_i<instance>_a<array> suffixes
+    rest <- sapply(rest, function(name) {
+      # extract field number: everything after leading 'p' up to first '_' or end
+      field <- sub('^p([0-9]+).*', '\\1', name)
+      # extract instance if present (_i<N>), default to 0
+      instance <- ifelse(grepl('_i([0-9]+)', name),
+                         sub('.*_i([0-9]+).*', '\\1', name), '0')
+      # extract array if present (_a<N>), default to 0
+      array <- ifelse(grepl('_a([0-9]+)', name),
+                      sub('.*_a([0-9]+).*', '\\1', name), '0')
+      paste0('X', field, '.', instance, '.', array)
+    }, USE.NAMES = FALSE)
 
     ## throw error if colnames are incorrectly specified
   } else if (xor(is.null(field_names), is.null(new_cols)) ||
