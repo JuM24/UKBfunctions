@@ -9,12 +9,12 @@ get_data_provider(
   hesin_df,
   gp_regs_df,
   gp_clinical_df,
-  cens_dates,
+  inpatient_cens_dates,
   type = "freq",
   fill_NAs = NULL,
   random_seed = NULL,
   invalid_dates = NULL,
-  gp_fetch_dates = list(england_vision = as.Date("2017-06-30"), scotland =
+  gp_cens_dates = list(england_vision = as.Date("2017-06-30"), scotland =
     as.Date("2017-05-31"), england_tpp = as.Date("2016-08-31"), wales =
     as.Date("2017-09-30"))
 )
@@ -32,9 +32,9 @@ with columns \code{eid}, \code{data_provider}, \code{reg_date}, and \code{deduct
 \item{gp_clinical_df}{Data frame of GP clinical event records (UKB field
 42040), with columns \code{eid}, \code{data_provider}, and \code{event_dt}.}
 
-\item{cens_dates}{A character vector of three dates in the form YYYY-mm-dd,
-corresponding to the censoring dates for England, Scotland, and Wales,
-as per UKB documentation.}
+\item{inpatient_cens_dates}{A named list of three Date values with elements
+\code{HES} (England), \code{SMR} (Scotland), and \code{PEDW} (Wales), giving the inpatient
+censoring date for each nation as per UKB documentation.}
 
 \item{type}{Determines the approach used to assign the data provider. \code{'last'}
 assigns the last data provider that the participant was in contact with,
@@ -53,7 +53,7 @@ set before the sampling.}
 \item{invalid_dates}{Optional character vector of dates in ISO format
 (YYYY-MM-DD) to treat as invalid in GP registration data (set to NA).}
 
-\item{gp_fetch_dates}{Named list of four Date values for imputing missing
+\item{gp_cens_dates}{Named list of four Date values for imputing missing
 GP deduct dates, with elements \code{england_vision}, \code{scotland}, \code{england_tpp},
 and \code{wales}. Defaults to the original UKB data-fetch dates.}
 }
