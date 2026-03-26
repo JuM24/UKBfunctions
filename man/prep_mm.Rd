@@ -47,7 +47,7 @@ and right-censoring or event occurrence, whichever occurs first.}
 
 \item{remove_censored}{Whether participants that were lost to follow-up
 before max_followup should be removed. Assumes the presence of the columns
-\code{asc_date} and \code{censor_date} in the data frame.}
+\code{asc_date} and \code{cutoff_date} in the data frame.}
 
 \item{min_age}{The minimum age of the sample. Determines whether participants
 below a certain age should be dropped prior to training.}

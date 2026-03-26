@@ -12,7 +12,7 @@
 #' predicted should occur.
 #' @param remove_censored Whether participants that were lost to follow-up
 #' before max_followup should be removed. Assumes the presence of the columns
-#' `asc_date` and `censor_date` in the data frame.
+#' `asc_date` and `cutoff_date` in the data frame.
 #' @param imbalance_correct Whether imbalance correction should be performed.
 #' Either `NULL`, `'SMOTE'` or `'downsample'`.
 #' @param remove_vars A list of column names that should be removed prior to

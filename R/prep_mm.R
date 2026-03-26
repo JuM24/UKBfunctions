@@ -20,7 +20,7 @@
 #' and right-censoring or event occurrence, whichever occurs first.
 #' @param remove_censored Whether participants that were lost to follow-up
 #' before max_followup should be removed. Assumes the presence of the columns
-#' `asc_date` and `censor_date` in the data frame.
+#' `asc_date` and `cutoff_date` in the data frame.
 #' @param min_age The minimum age of the sample. Determines whether participants
 #' below a certain age should be dropped prior to training.
 #' @param imbalance_correct The desired proportion of the total for the

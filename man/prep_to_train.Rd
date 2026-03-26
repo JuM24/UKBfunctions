@@ -38,7 +38,7 @@ predicted should occur.}
 
 \item{remove_censored}{Whether participants that were lost to follow-up
 before max_followup should be removed. Assumes the presence of the columns
-\code{asc_date} and \code{censor_date} in the data frame.}
+\code{asc_date} and \code{cutoff_date} in the data frame.}
 
 \item{imbalance_correct}{Whether imbalance correction should be performed.
 Either \code{NULL}, \code{'SMOTE'} or \code{'downsample'}.}

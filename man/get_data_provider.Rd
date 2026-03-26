@@ -9,14 +9,15 @@ get_data_provider(
   hesin_df,
   gp_regs_df,
   gp_clinical_df,
-  inpatient_cens_dates,
+  inpatient_cens_dates = list(HES = as.Date("2023-03-31"), SMR = as.Date("2022-08-31"),
+    PEDW = as.Date("2022-05-31")),
   type = "freq",
   fill_NAs = NULL,
   random_seed = NULL,
   invalid_dates = NULL,
-  gp_cens_dates = list(england_vision = as.Date("2017-06-30"), scotland =
-    as.Date("2017-05-31"), england_tpp = as.Date("2016-08-31"), wales =
-    as.Date("2017-09-30"))
+  gp_cens_dates = list(england_vision = as.Date("2017-05-31"), scotland =
+    as.Date("2017-03-31"), england_tpp = as.Date("2016-05-31"), wales =
+    as.Date("2017-08-31"))
 )
 }
 \arguments{
@@ -58,7 +59,7 @@ GP deduct dates, with elements \code{england_vision}, \code{scotland}, \code{eng
 and \code{wales}. Defaults to the original UKB data-fetch dates.}
 }
 \value{
-A data frame with columns \code{eid}, \code{data_provider}, \code{censor_date},
+A data frame with columns \code{eid}, \code{data_provider}, \code{cutoff_date},
 and \code{loss_to_follow_up_date}.
 }
 \description{
