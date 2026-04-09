@@ -3,6 +3,9 @@
 #' `get_aux_vars` takes the data frame UKB participants and
 #' returns a data frame with additional columns relevant for multimorbidity.
 #' @param df The input data frame.
+#' @return A data frame with one row per participant and columns for auxiliary
+#' variables including cognitive measures, biomarkers, PRS scores, pollution
+#' exposures, lifestyle factors, and family history indicators.
 #' @export
 
 get_aux_vars <- function(df){

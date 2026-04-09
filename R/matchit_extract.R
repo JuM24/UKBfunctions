@@ -7,6 +7,9 @@
 #' of `matchit_comparison`.
 #' @param impute Whether the matching was performed on an imputed dataset.
 #' @param smd_thresh The SMD threshold for what is considered a good match.
+#' @return A one-row tibble with balance metrics including max/mean SMD,
+#' number of variables exceeding the SMD threshold, worst/mean variance ratio,
+#' and counts of discarded observations, or `NULL` if the input is `NULL`.
 #' @export
 
 

@@ -4,6 +4,7 @@
 #' returns as the output the same table as an R dataframe.
 #' @param tbl_path Path to the table.
 #'
+#' @return A data frame with the contents of the table.
 #' @export
 
 read_tbl <- function(tbl_path){

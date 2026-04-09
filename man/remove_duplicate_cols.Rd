@@ -9,6 +9,9 @@ remove_duplicate_cols(x)
 \arguments{
 \item{x}{A vector or array.}
 }
+\value{
+The input vector with duplicated elements replaced by \code{NA}.
+}
 \description{
 \code{remove_duplicate_cols} takes a vector or array and returns it with
 duplicated elements replaced by NAs.

@@ -9,6 +9,10 @@ move_nas_to_right(x)
 \arguments{
 \item{x}{A vector or array.}
 }
+\value{
+The input vector rearranged so that all non-\code{NA} values appear
+first (in their original order), followed by \code{NA} values.
+}
 \description{
 \code{move_nas_to_right} takes a vector or array and rearranges the elements such
 that all non-NA values will - in unchanged order - appear before the NAs.

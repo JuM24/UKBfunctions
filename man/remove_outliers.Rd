@@ -16,6 +16,9 @@ spread. Must be either 'sd' or 'iqr'.}
 standard deviations or interquartile ranges - from the mean/median that are
 after which observations are considered outliers.}
 }
+\value{
+The input array with outlier values replaced by \code{NA}.
+}
 \description{
 \code{remove_outliers} takes an array, sets outliers to NA, and returns the array.
 }

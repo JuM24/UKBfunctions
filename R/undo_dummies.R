@@ -6,6 +6,9 @@
 #' @param df The input data frame.
 #' @param remove_dummies Whether the dummy variables should be removed.
 #' @param verbose Whether to print progress to console.
+#' @return The input data frame with dummy columns replaced by their original
+#' multi-level factor columns. If `remove_dummies = TRUE`, the dummy columns
+#' are removed.
 #' @export
 
 undo_dummies <- function(df,

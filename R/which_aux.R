@@ -18,6 +18,10 @@
 #' - excluding the missing variable - before the variable is flagged.
 #' @param missing_cor_flag The minimum correlation with the missing variable
 #' among pairwise-complete cases before the variable is flagged.
+#' @return A data frame with one row per candidate variable, ordered by
+#' descending absolute correlation with the missing variable, containing
+#' correlation coefficients, missingness counts and flags, inter-variable
+#' correlation metrics, and a modelling-variable indicator.
 #' @export
 
 

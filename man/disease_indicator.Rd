@@ -27,6 +27,11 @@ should be in the same format as \code{colname}. If not \code{NULL}, events occur
 after this date are considered non-events and changed to NA in the returned
 data frame.}
 }
+\value{
+The input data frame with the original event column renamed to
+\verb{<colname>_date} and a new integer indicator column \verb{<colname>} (1 = event,
+0 = no event, \code{NA} = invalid date).
+}
 \description{
 \code{disease_indicator} takes a data frame and a string indicating the column
 containing the dates of an event, and returns the same data frame with

@@ -36,6 +36,8 @@
 #' @param smote_K Relevant for SMOTE. The number of nearest neighbours for KNN.
 #' @param verbose Whether to print progress to console.
 #' @param random_seed Random seed for imbalance correction and cross-validation.
+#' @return A list with elements `train_set`, `test_set`, and `specs`, as returned
+#' by [prep_to_train()]. The object is also saved to disk as an .Rds file.
 #' @export
 
 prep_mm <- function(input_file_path = NULL,

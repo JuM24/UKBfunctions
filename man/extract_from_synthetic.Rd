@@ -30,6 +30,10 @@ the field IDs.}
 \item{out_path}{An optional path to write \code{masterfile_syn.csv} to, the finished
 data frame that is returned by this function.}
 }
+\value{
+A data frame with one row per participant and columns for all
+requested UKB fields from the synthetic data.
+}
 \description{
 \code{extract_from_synthetic} takes a table with field IDs, required .Rds files
 with UKB synthetic data, and a data-type lookup table and returns a subset

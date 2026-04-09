@@ -70,6 +70,13 @@ of numeric breakpoints per variable. Passed as \code{cutpoints} to \code{matchit
 
 \item{smd_thresh}{The threshold for the max. SMD that implies balance.}
 }
+\value{
+A list with three elements: \code{results} (a data frame containing
+matchit objects and balance diagnostics for each method/distance
+combination), \code{metrics_base} (a summary table of base-variable balance
+metrics), and \code{metrics_int} (a summary table of interaction and
+second-order balance metrics).
+}
 \description{
 \code{matchit_comparison} returns a list, that contains three lists, all with
 different matching approaches as rows. 'results' is the most comprehensive

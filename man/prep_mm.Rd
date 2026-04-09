@@ -72,6 +72,10 @@ all numerical variables as numerical.}
 
 \item{random_seed}{Random seed for imbalance correction and cross-validation.}
 }
+\value{
+A list with elements \code{train_set}, \code{test_set}, and \code{specs}, as returned
+by \code{\link[=prep_to_train]{prep_to_train()}}. The object is also saved to disk as an .Rds file.
+}
 \description{
 REMOVE THIS FUNCTION - IT IS UNUSED AND REDUNDANT !!!!!!!!
 }

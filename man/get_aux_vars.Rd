@@ -9,6 +9,11 @@ get_aux_vars(df)
 \arguments{
 \item{df}{The input data frame.}
 }
+\value{
+A data frame with one row per participant and columns for auxiliary
+variables including cognitive measures, biomarkers, PRS scores, pollution
+exposures, lifestyle factors, and family history indicators.
+}
 \description{
 \code{get_aux_vars} takes the data frame UKB participants and
 returns a data frame with additional columns relevant for multimorbidity.

@@ -12,6 +12,8 @@
 #' @param conv_table The path to the ICD10/ICD9 conversion table.
 #' @param mm_codes_file The path to the codes for each MM.
 #' @param random_seed The number of `set.seed`.
+#' @return A data frame with one row per participant and columns `id`,
+#' `asc_age`, `asc_date`, and binary indicator columns for each disorder.
 #' @export
 
 create_mm_masterfile <- function(df,

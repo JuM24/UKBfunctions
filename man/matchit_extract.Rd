@@ -14,6 +14,11 @@ of \code{matchit_comparison}.}
 
 \item{impute}{Whether the matching was performed on an imputed dataset.}
 }
+\value{
+A one-row tibble with balance metrics including max/mean SMD,
+number of variables exceeding the SMD threshold, worst/mean variance ratio,
+and counts of discarded observations, or \code{NULL} if the input is \code{NULL}.
+}
 \description{
 \code{matchit_extract} takes as input the 'results' object of the \code{matchit_comparison}
 function to create a data frame with simplified matching metrics,

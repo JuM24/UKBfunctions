@@ -26,6 +26,8 @@
 #' cross-validation folds and of the tuning grid - argument `seeds` in
 #' `caret::trainControl`.
 #' @param verbose Whether to print progress to console.
+#' @return A `caret::train` object containing the trained model, cross-validation
+#' results, and tuning parameters.
 #' @export
 
 train_mm <- function(df,

@@ -57,6 +57,10 @@ cross-validation folds and of the tuning grid - argument \code{seeds} in
 
 \item{verbose}{Whether to print progress to console.}
 }
+\value{
+A \code{caret::train} object containing the trained model, cross-validation
+results, and tuning parameters.
+}
 \description{
 \code{train_mm} Takes and input data frame, potentially corrects for class
 imbalance of the target variable, and trains a predictive model using

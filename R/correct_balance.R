@@ -24,6 +24,9 @@
 #' @param K Relevant for SMOTE. The number of nearest neighbours for KNN.
 #' @param normalise Whether numerical variables should be scaled. Defaults to TRUE
 #' when `approach = 'SMOTE'`
+#' @return The input data frame after class-imbalance correction. When
+#' `approach = NULL`, the data frame is returned unchanged (except for
+#' potential column removal and scaling).
 #' @export
 # TODO add warning about forced scaling for SMOTE
 # TODO: change target_var to status and warn that works only for single outcome not competing risks

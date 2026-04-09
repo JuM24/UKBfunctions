@@ -32,6 +32,12 @@ variable is flagged.}
 \item{missing_cor_flag}{The minimum correlation with the missing variable
 among pairwise-complete cases before the variable is flagged.}
 }
+\value{
+A data frame with one row per candidate variable, ordered by
+descending absolute correlation with the missing variable, containing
+correlation coefficients, missingness counts and flags, inter-variable
+correlation metrics, and a modelling-variable indicator.
+}
 \description{
 \code{which_aux} takes a data frame and returns a table with metrics relevant for
 choosing auxiliary variables for multiple imputation of a missing variable.

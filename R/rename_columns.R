@@ -18,6 +18,8 @@
 #' in which case the latter must contain as columns `field_names` and `new_cols`
 #' that refer to the old to-be-replaced field names and the new names, respectively.
 #'
+#' @return The input data frame with column names renamed according to the
+#' provided dictionary or the default RAP-to-local conversion.
 #' @export
 
 rename_columns <- function(df,

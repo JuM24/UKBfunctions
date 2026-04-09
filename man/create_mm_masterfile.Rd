@@ -29,6 +29,10 @@ required format is \verb{\%d/\%m/\%Y}. If \code{NULL}, or when \code{mm_source =
 
 \item{random_seed}{The number of \code{set.seed}.}
 }
+\value{
+A data frame with one row per participant and columns \code{id},
+\code{asc_age}, \code{asc_date}, and binary indicator columns for each disorder.
+}
 \description{
 \code{create_mm_masterfile} takes the data frame with all the UKB data and
 returns a data frame with participants as rows and binary indicators for

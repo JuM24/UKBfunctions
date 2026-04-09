@@ -7,8 +7,10 @@
 #' `disorder_long`, `field_id`, and `disorder`, indicating the self-report code
 #' in UKB, the custom name of the disorder, the UKB field ID (20002 or 20001),
 #' and a short name for the disorder, respectively.
-#' @param cancer TRUE or FALSE; indicates whether field ID 20001 or 20002 is 
+#' @param cancer TRUE or FALSE; indicates whether field ID 20001 or 20002 is
 #' used.
+#' @return A wide data frame with one row per participant (`id`) and one
+#' binary indicator column (0/1) per disorder.
 #' @export
 
 create_diseases_self <- function(df, 

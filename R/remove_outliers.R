@@ -7,6 +7,7 @@
 #' @param var_metric Numerical; indicates the threshold of variance units -
 #' standard deviations or interquartile ranges - from the mean/median that are
 #' after which observations are considered outliers.
+#' @return The input array with outlier values replaced by `NA`.
 #' @export
 
 remove_outliers <- function(x, method, var_metric) {

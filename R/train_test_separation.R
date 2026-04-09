@@ -24,6 +24,10 @@
 #' @param imp_seed Seed for the imputation; corresponds to `seed` argument in
 #' `missRanger` and relevant only when `impute_missing = TRUE`.
 #' @param verbose Whether to print progress to console.
+#' @return A list containing `train_set`, `train_ids`, `train_indices`,
+#' `test_set`, `test_ids`, `test_indices`, and `specs`. When
+#' `impute_missing = TRUE`, the list additionally contains `imp_train` and
+#' `imp_test` (the `missRanger` imputation objects).
 #' @export
 
 train_test_separation <- function(df,

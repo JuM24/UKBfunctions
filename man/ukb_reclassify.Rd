@@ -11,6 +11,10 @@ ukb_reclassify(x, field_id)
 
 \item{field_id}{Integer; field ID for the variable.}
 }
+\value{
+An integer representing the reclassified level, or \code{NA} if the
+input cannot be classified.
+}
 \description{
 \code{ukb_reclassify} takes an array of coded observations for various UKB
 variables and re-classifies them. See \code{details} for more.

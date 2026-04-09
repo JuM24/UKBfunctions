@@ -16,6 +16,8 @@
 #' 1 - low (code 4: light household tasks only),
 #' 2 - medium (codes 1/2/5: heavy household tasks, walking for pleasure, other exercise),
 #' 3 - high (code 3: strenuous sports).
+#' @return An integer representing the reclassified level, or `NA` if the
+#' input cannot be classified.
 #' @export
 
 ukb_reclassify <- function(x, field_id){

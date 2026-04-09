@@ -11,6 +11,7 @@
 #' and 28 can be input.
 #' @param random_seed Random seed for selecting the day.
 #'
+#' @return The input data frame with a new `birth_date` column of class `Date`.
 #' @export
 
 set_birth_date <- function(df,

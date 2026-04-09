@@ -52,6 +52,11 @@ This reduces the number of variables so that e.g., we have "sex" instead of
 \item{normalise}{Whether numerical variables should be scaled. Defaults to TRUE
 when \code{approach = 'SMOTE'}}
 }
+\value{
+The input data frame after class-imbalance correction. When
+\code{approach = NULL}, the data frame is returned unchanged (except for
+potential column removal and scaling).
+}
 \description{
 \code{correct_balance} takes a data frame and corrects class imbalance for a
 chosen binary variable. It returns the balanced data frame.

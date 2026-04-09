@@ -64,6 +64,11 @@ ordinal categorical variables in the training data.}
 
 \item{K}{Only relevant if \code{imbalance_correct = 'SMOTE'}. The K for KNN.}
 }
+\value{
+A list with three elements: \code{train_set} (the processed training data
+frame), \code{test_set} (the processed test data frame), and \code{specs} (a named
+list of the processing parameters used).
+}
 \description{
 \code{prep_to_train} Takes the train and test sets and returns them ready to be
 input into a predictive model. All numerical variables are scaled.

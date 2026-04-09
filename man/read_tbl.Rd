@@ -9,6 +9,9 @@ read_tbl(tbl_path)
 \arguments{
 \item{tbl_path}{Path to the table.}
 }
+\value{
+A data frame with the contents of the table.
+}
 \description{
 \code{read_tbl} takes as input the path to an \verb{.xlsx,} \code{.xls}, or \code{.csv} table and
 returns as the output the same table as an R dataframe.

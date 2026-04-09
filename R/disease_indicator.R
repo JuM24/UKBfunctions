@@ -14,6 +14,9 @@
 #'  should be in the same format as `colname`. If not `NULL`, events occurring
 #'  after this date are considered non-events and changed to NA in the returned
 #'  data frame.
+#' @return The input data frame with the original event column renamed to
+#' `<colname>_date` and a new integer indicator column `<colname>` (1 = event,
+#' 0 = no event, `NA` = invalid date).
 #' @export
 
 disease_indicator <- function(df,

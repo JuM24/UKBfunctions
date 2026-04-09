@@ -30,6 +30,10 @@ table_to_string(
 
 \item{keep_assessments}{Which assessments are to be kept; accepts 'all' and '0'.}
 }
+\value{
+A single comma-separated character string of field ID names
+formatted for the UKB table exporter.
+}
 \description{
 \code{table_to_string} takes a table and transforms it into a string for the UKB
 table exporter

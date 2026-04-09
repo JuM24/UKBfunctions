@@ -13,6 +13,10 @@ amend_mm_features(df, mm_source = "self_report", verbose = FALSE)
 
 \item{verbose}{Whether to print progress to console.}
 }
+\value{
+The input data frame with consolidated disease indicator columns
+and the intermediate \verb{_add_N} columns removed.
+}
 \description{
 \code{amend_mm_features} takes the data frame and amends the MM features with
 additional data.

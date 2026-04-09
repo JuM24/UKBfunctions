@@ -28,6 +28,9 @@
 #' @param K Only relevant if `imbalance_correct = 'SMOTE'`. The K for KNN.
 #' @param normalise Whether to scale numerical data.
 #' @param verbose Whether to print progress to console.
+#' @return A list with three elements: `train_set` (the processed training data
+#' frame), `test_set` (the processed test data frame), and `specs` (a named
+#' list of the processing parameters used).
 #' @export
 
 prep_to_train <- function(train_set,

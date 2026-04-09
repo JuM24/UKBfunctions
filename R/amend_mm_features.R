@@ -5,6 +5,8 @@
 #' @param df The input data frame.
 #' @param mm_source The source of disease history.
 #' @param verbose Whether to print progress to console.
+#' @return The input data frame with consolidated disease indicator columns
+#' and the intermediate `_add_N` columns removed.
 #' @export
 
 amend_mm_features <- function(df,

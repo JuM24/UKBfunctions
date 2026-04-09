@@ -17,6 +17,10 @@ and a short name for the disorder, respectively.}
 \item{cancer}{TRUE or FALSE; indicates whether field ID 20001 or 20002 is
 used.}
 }
+\value{
+A wide data frame with one row per participant (\code{id}) and one
+binary indicator column (0/1) per disorder.
+}
 \description{
 \code{create_diseases_self} takes a data frame with an id column and the 20002 or
 20001 UKB columns and returns a data frame with relevant disorders as rows

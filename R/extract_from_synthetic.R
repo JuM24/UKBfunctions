@@ -16,6 +16,8 @@
 #' @param data_path The path for the .Rds files with synthetic UKB data.
 #' @param out_path An optional path to write `masterfile_syn.csv` to, the finished
 #' data frame that is returned by this function.
+#' @return A data frame with one row per participant and columns for all
+#' requested UKB fields from the synthetic data.
 #' @export
 
 extract_from_synthetic <- function(field_table,

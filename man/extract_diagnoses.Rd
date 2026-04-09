@@ -56,6 +56,12 @@ data frame is to be written.}
 \item{out_file_name}{The file name for the data frame if it is to be exported;
 don't forget to include '.csv' at the end.}
 }
+\value{
+A data frame in long format with columns for participant ID,
+diagnostic code, date, and coding system. When \code{return_code_table = TRUE},
+a list with elements \code{diagnoses} (the data frame) and \code{code_table} (the
+code table with instance counts).
+}
 \description{
 \code{extract_diagnoses} takes a data frame with UKB data and returns a data frame
 with select inpatient information.

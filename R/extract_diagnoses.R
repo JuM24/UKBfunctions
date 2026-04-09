@@ -40,6 +40,10 @@
 #' The allowed inputs for coding systems in the `code_table` data frame are
 #' "icd9", "icd10", "read2", "read3", "snomed". The code table need not
 #' contain all coding systems; any subset is accepted.
+#' @return A data frame in long format with columns for participant ID,
+#' diagnostic code, date, and coding system. When `return_code_table = TRUE`,
+#' a list with elements `diagnoses` (the data frame) and `code_table` (the
+#' code table with instance counts).
 #' @export
 
 extract_diagnoses <- function(df,

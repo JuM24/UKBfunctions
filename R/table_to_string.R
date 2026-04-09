@@ -10,6 +10,8 @@
 #' 0 or 1 for a0 and a1.
 #' @param repeats_high Column name for the last digit for repeats.
 #' @param keep_assessments Which assessments are to be kept; accepts 'all' and '0'.
+#' @return A single comma-separated character string of field ID names
+#' formatted for the UKB table exporter.
 #' @export
 
 table_to_string <- function(file_path,

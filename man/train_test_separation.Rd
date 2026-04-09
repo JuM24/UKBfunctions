@@ -52,6 +52,12 @@ imputation; corresponds to \code{pmm.k} argument in \code{missRanger} and releva
 
 \item{verbose}{Whether to print progress to console.}
 }
+\value{
+A list containing \code{train_set}, \code{train_ids}, \code{train_indices},
+\code{test_set}, \code{test_ids}, \code{test_indices}, and \code{specs}. When
+\code{impute_missing = TRUE}, the list additionally contains \code{imp_train} and
+\code{imp_test} (the \code{missRanger} imputation objects).
+}
 \description{
 \code{train_test_separation} takes a data frame with all features required for
 training and separates it into train and test sets.

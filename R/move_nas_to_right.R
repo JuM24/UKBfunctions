@@ -3,6 +3,8 @@
 #' `move_nas_to_right` takes a vector or array and rearranges the elements such
 #' that all non-NA values will - in unchanged order - appear before the NAs.
 #' @param x A vector or array.
+#' @return The input vector rearranged so that all non-`NA` values appear
+#' first (in their original order), followed by `NA` values.
 #' @export
 
 move_nas_to_right <- function(x) {

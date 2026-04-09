@@ -19,6 +19,9 @@ and 28 can be input.}
 
 \item{random_seed}{Random seed for selecting the day.}
 }
+\value{
+The input data frame with a new \code{birth_date} column of class \code{Date}.
+}
 \description{
 \code{set_birth_date} takes as input the data frame and the names of columns
 representing year of birth and month of birth, respectively. It returns

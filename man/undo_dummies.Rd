@@ -13,6 +13,11 @@ undo_dummies(df, remove_dummies = TRUE, verbose = FALSE)
 
 \item{verbose}{Whether to print progress to console.}
 }
+\value{
+The input data frame with dummy columns replaced by their original
+multi-level factor columns. If \code{remove_dummies = TRUE}, the dummy columns
+are removed.
+}
 \description{
 \code{undo_dummies} takes a data frame with dummy variables created by
 hot-one-encoding, often through the use of KNN-based methods, and

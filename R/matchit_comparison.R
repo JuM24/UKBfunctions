@@ -34,6 +34,11 @@
 #' string algorithm name (e.g. `"sturges"`, `"fd"`, `"scott"`) or a named list
 #' of numeric breakpoints per variable. Passed as `cutpoints` to `matchit`.
 #' @param smd_thresh The threshold for the max. SMD that implies balance.
+#' @return A list with three elements: `results` (a data frame containing
+#' matchit objects and balance diagnostics for each method/distance
+#' combination), `metrics_base` (a summary table of base-variable balance
+#' metrics), and `metrics_int` (a summary table of interaction and
+#' second-order balance metrics).
 #' @export
 
 
