@@ -44,6 +44,13 @@
 #' '12498' and '0.873', the written table will contain a single column with the
 #' entry '12498 (87.3%)'. Note that in both above examples, `sig_fig = 3`.
 #'
+#' When `useNA = TRUE`, missing values are presented in the same format as
+#' categorical levels: the `raw` table includes both `n_missing` and
+#' `proportion_missing` columns, and the `formatted` table combines them into
+#' a single column (e.g., '5 (10%)'). In this case, the proportions for all
+#' levels of a categorical variable plus the proportion of missing values sum
+#' to 1 (or close to 1 due to rounding).
+#'
 #' The function always returns a list with two elements: `raw` (separate columns
 #' per metric) and `formatted` (combined columns as described above). When
 #' `write = TRUE`, the formatted version is additionally written to disk.
@@ -90,7 +97,7 @@ desc_stats <- function(df,
     sort(unique(as.character(df[[v]][!is.na(df[[v]])]))))
 
   # helper: compute stats for one data subset
-  compute_one <- function(data) {
+  compute_one <- function(data, useNA) {
     rows <- list()
     for (v in variables) {
       col <- data[[v]]
@@ -103,26 +110,32 @@ desc_stats <- function(df,
           ct <- signif(mean(col, na.rm = TRUE), sig_fig)
           sp <- signif(sd(col, na.rm = TRUE), sig_fig)
         }
+        nm <- sum(is.na(col))
         rows[[length(rows) + 1]] <- data.frame(
           variable = v, level = NA_character_,
           central = ct, spread = sp,
           n = NA_integer_, proportion = NA_real_,
-          n_missing = sum(is.na(col)),
+          n_missing = nm,
+          proportion_missing = signif(nm / nrow(data), sig_fig),
           stringsAsFactors = FALSE)
       } else {
         lvls <- all_levels[[v]]
         total_valid <- sum(!is.na(col))
+        total_n <- length(col)
+        denom <- if (useNA) total_n else total_valid
         nm <- sum(is.na(col))
+        pm <- signif(nm / total_n, sig_fig)
         tbl <- table(factor(as.character(col), levels = lvls))
         for (i in seq_along(lvls)) {
           count <- as.integer(tbl[lvls[i]])
-          prop <- if (total_valid > 0) signif(count / total_valid, sig_fig)
+          prop <- if (denom > 0) signif(count / denom, sig_fig)
                   else NA_real_
           rows[[length(rows) + 1]] <- data.frame(
             variable = v, level = lvls[i],
             central = NA_real_, spread = NA_real_,
             n = count, proportion = prop,
             n_missing = if (i == 1) nm else NA_integer_,
+            proportion_missing = if (i == 1) pm else NA_real_,
             stringsAsFactors = FALSE)
         }
       }
@@ -132,8 +145,11 @@ desc_stats <- function(df,
 
   # compute stats (stratified or not)
   if (is.null(stratify_by)) {
-    raw <- compute_one(df)
-    if (!useNA) raw$n_missing <- NULL
+    raw <- compute_one(df, useNA)
+    if (!useNA) {
+      raw$n_missing <- NULL
+      raw$proportion_missing <- NULL
+    }
 
   } else {
     group_df <- df[stratify_by]
@@ -142,24 +158,28 @@ desc_stats <- function(df,
     groups <- sort(unique(group_labels[complete_mask]))
 
     # overall stats (used for row skeleton and overall n_missing)
-    base <- compute_one(df)
+    base <- compute_one(df, useNA)
     raw <- base[, c('variable', 'level')]
 
     for (g in groups) {
-      grp <- compute_one(df[group_labels == g & complete_mask, , drop = FALSE])
-      for (col in c('central', 'spread', 'n', 'proportion', 'n_missing')) {
+      grp <- compute_one(df[group_labels == g & complete_mask, , drop = FALSE], useNA)
+      for (col in c('central', 'spread', 'n', 'proportion', 'n_missing',
+                     'proportion_missing')) {
         raw[[paste0(col, '_', g)]] <- grp[[col]]
       }
     }
 
-    # handle n_missing columns
+    # handle n_missing / proportion_missing columns
     if (useNA) {
       if (!NA_stratify) {
         raw[grep('^n_missing_', colnames(raw))] <- NULL
+        raw[grep('^proportion_missing_', colnames(raw))] <- NULL
         raw$n_missing <- base$n_missing
+        raw$proportion_missing <- base$proportion_missing
       }
     } else {
       raw[grep('n_missing', colnames(raw))] <- NULL
+      raw[grep('proportion_missing', colnames(raw))] <- NULL
     }
   }
 
@@ -186,9 +206,15 @@ desc_stats <- function(df,
     }
   }
 
-  # carry over n_missing columns
+  # format n_missing columns as "n (pct%)"
   nm_cols <- grep('^n_missing', colnames(raw), value = TRUE)
-  for (nm in nm_cols) formatted[[nm]] <- raw[[nm]]
+  for (nm in nm_cols) {
+    pm <- sub('^n_missing', 'proportion_missing', nm)
+    formatted[[nm]] <- ifelse(
+      is.na(raw[[nm]]), NA_character_,
+      paste0(raw[[nm]], ' (',
+             signif(raw[[pm]] * 100, sig_fig), '%)'))
+  }
 
   # write
   if (write) {

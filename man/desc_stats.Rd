@@ -75,6 +75,13 @@ another example, if the R file has two separate columns with n and proportion
 '12498' and '0.873', the written table will contain a single column with the
 entry '12498 (87.3\%)'. Note that in both above examples, \code{sig_fig = 3}.
 
+When \code{useNA = TRUE}, missing values are presented in the same format as
+categorical levels: the \code{raw} table includes both \code{n_missing} and
+\code{proportion_missing} columns, and the \code{formatted} table combines them into
+a single column (e.g., '5 (10\%)'). In this case, the proportions for all
+levels of a categorical variable plus the proportion of missing values sum
+to 1 (or close to 1 due to rounding).
+
 The function always returns a list with two elements: \code{raw} (separate columns
 per metric) and \code{formatted} (combined columns as described above). When
 \code{write = TRUE}, the formatted version is additionally written to disk.
