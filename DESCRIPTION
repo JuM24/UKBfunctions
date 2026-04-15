@@ -1,13 +1,39 @@
 Package: UKBfunctions
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+Title: Utilities for Processing and Analysing UK Biobank Data
+Version: 0.1.0
+Authors@R:
+    person("Jure", "Mur", , "jure.mur@uni.lu", role = c("aut", "cre"))
+Description: Provides utilities for processing and analysing UK Biobank
+    (UKB) data for multimorbidity research and predictive modelling.
+    Includes functions for disease ascertainment from self-report and
+    inpatient data, feature engineering of auxiliary variables, stratified
+    train/test splitting with optional imputation, class imbalance
+    correction, and model training via 'caret'.
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 URL: https://github.com/JuM24/UKBfunctions
 BugReports: https://github.com/JuM24/UKBfunctions/issues
+Imports:
+    caret,
+    cobalt,
+    doFuture,
+    dplyr,
+    furrr,
+    future,
+    lubridate,
+    MatchIt,
+    MatchThem,
+    missRanger,
+    purrr,
+    readxl,
+    smotefamily,
+    stringr,
+    tibble,
+    tidyr,
+    tidyselect,
+    tools
+Suggests:
+    devtools,
+    testthat
