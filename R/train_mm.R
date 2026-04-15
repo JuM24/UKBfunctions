@@ -87,9 +87,6 @@ train_mm <- function(df,
 
   if (distribute_cores == TRUE){
 
-    library(future)
-    library(doFuture)
-
     # ignore the unexpected random number generation warning - it is expected
     # due to the generation of `random_seeds` to be provided to `caret`
     options(doFuture.rng.onMisuse = 'ignore')

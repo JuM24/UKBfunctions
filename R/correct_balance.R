@@ -68,7 +68,6 @@ correct_balance <- function(df,
     return(df)
 
   } else if (approach == 'SMOTE'){
-    library(caret)
 
     if (verbose == TRUE){
       print('Applying SMOTE...')
