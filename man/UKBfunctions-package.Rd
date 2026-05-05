@@ -19,5 +19,10 @@ Useful links:
 \author{
 \strong{Maintainer}: Jure Mur \email{jure.mur@uni.lu}
 
+Authors:
+\itemize{
+  \item Jure Mur \email{jure.mur@uni.lu}
+}
+
 }
 \keyword{internal}

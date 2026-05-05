@@ -8,7 +8,10 @@ disease_indicator(
   df,
   colname,
   date_form = NULL,
+  baseline_date = NULL,
   invalid_dates = NULL,
+  disease_time = FALSE,
+  time_units = "days",
   threshold_date = NULL
 )
 }
@@ -17,15 +20,28 @@ disease_indicator(
 
 \item{colname}{Character; Name of the column with the dates for the event.}
 
-\item{date_form}{Character; format of the date.}
+\item{date_form}{Character; format of the date. Ignored for arguments that
+are already of class \code{Date}.}
 
-\item{invalid_dates}{Array; strings of invalid dates in the form \code{date_form}.
-Events with these dates will be converted to NA.}
+\item{baseline_date}{String indicating the baseline date. The string should
+match a variable in \code{df} that contains character strings or Date values
+convertible to dates.}
 
-\item{threshold_date}{Single character or vector of same length as \code{nrow(df)};
-should be in the same format as \code{colname}. If not \code{NULL}, events occurring
-after this date are considered non-events and changed to NA in the returned
-data frame.}
+\item{invalid_dates}{Character or Date vector; invalid dates in the form
+\code{date_form} (or already of class \code{Date}). Events with these dates will
+be converted to NA.}
+
+\item{disease_time}{Logical; whether the time between the baseline
+date and the disease date should be calculated and added to the data frame.
+Units are controlled by \code{time_units}.}
+
+\item{time_units}{Character; unit for the disease time column. One of
+\code{'days'}, \code{'weeks'}, \code{'months'}, \code{'years'}. Default is \code{'days'}.}
+
+\item{threshold_date}{Single character/Date or vector of same length as
+\code{nrow(df)}; should be in the same format as \code{colname} (or already of class
+\code{Date}). If not \code{NULL}, events occurring after this date are considered
+non-events and changed to NA in the returned data frame.}
 }
 \value{
 The input data frame with the original event column renamed to
