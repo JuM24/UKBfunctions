@@ -27,7 +27,7 @@ Imports:
 	quickmatch,
     MatchThem,
     missRanger,
-    purrr,
+    purrr (>= 1.0.0),
     readxl,
     smotefamily,
     stringr,

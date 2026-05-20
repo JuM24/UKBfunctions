@@ -301,7 +301,11 @@ map_diag_codes <- function(readmaps,
         dplyr::distinct(variable, code, .keep_all = TRUE),
       rows_supplied |>
         dplyr::distinct(variable, icd10_code) |>
-        dplyr::transmute(variable, code = icd10_code,
+        # strip the decimal dot so icd10 codes in `$lookup` match the dotless
+        # form used in the per-disease .csv outputs and in `icd10_lkp.ALT_CODE`
+        # (which the description fill below joins on).
+        dplyr::transmute(variable,
+                         code = stringr::str_remove(icd10_code, '\\.'),
                          code_source = 'icd10', description = NA_character_)
     )
 
@@ -326,9 +330,7 @@ map_diag_codes <- function(readmaps,
 
     # optional: fill icd10 / ctv3 / ctv3simple descriptions from all_lkps_maps_v4.xlsx.
     if (!is.null(lkps_maps)) {
-      # TODO: this seems to use the `read_ctv3_lkp` sheet for both
-      # ctv3 and ctv3simple, but the sheet doesn't specify which one it maps to;
-      # how do we know it maps to both ctv3 and ctv3simple?
+      # one lookup for both ctv3 and ctv3simple
       ctv3_lkp <- readxl::read_excel(lkps_maps, sheet = 'read_ctv3_lkp',
                                      col_types = 'text') |>
         dplyr::transmute(code = read_code, desc_new = term_description) |>
@@ -356,9 +358,6 @@ map_diag_codes <- function(readmaps,
         dplyr::mutate(read2_lkp, code_source = 'read2')
       )
       long <- long |>
-        # TODO: why are we stripping the dot?
-        #dplyr::mutate(code_norm = stringr::str_remove(code, '\\.')) |>
-        #dplyr::left_join(lkp_desc, by = c('code_norm', 'code_source')) |>
         dplyr::left_join(lkp_desc, by = c('code', 'code_source')) |>
         dplyr::mutate(description = dplyr::coalesce(description, desc_new)) |>
         dplyr::select(code, code_source, description, variable)
@@ -403,7 +402,6 @@ map_diag_codes <- function(readmaps,
 
       icd9_from_icd10 <- long |>
         dplyr::filter(code_source == 'icd10') |>
-        dplyr::mutate(code = stringr::str_remove_all(code, '\\.')) |>
         dplyr::inner_join(icd10_to_icd9, by = 'code',
                           relationship = 'many-to-many') |>
         dplyr::transmute(variable, code = icd9, code_source = 'icd9')
@@ -434,7 +432,7 @@ map_diag_codes <- function(readmaps,
 
     long <- long |>
       dplyr::filter(!is.na(code)) |>
-      dplyr::distinct(code, code_source, .keep_all = TRUE) |>
+      dplyr::distinct(code, code_source, variable, .keep_all = TRUE) |>
       dplyr::select(code, code_source, description, variable)
 
   } else {
