@@ -19,6 +19,7 @@ Imports:
     cobalt,
     doFuture,
     dplyr,
+    finalfit,
     furrr,
     future,
     lubridate,
@@ -36,5 +37,9 @@ Imports:
     tools
 Suggests:
     devtools,
+    Rdiagnosislist,
     testthat
+Remotes:
+    anoopshah/Rdiagnosislist
 Config/roxygen2/version: 8.0.0
+Config/testthat/edition: 3
