@@ -20,10 +20,22 @@
 #' per-disease `.xlsx` ICD-10 files can be joined to the lookup and written
 #' out as mapped `.csv` files.
 #'
-#' @param readmaps A list of 3 paths for the following 3 files (in this order):
-#' Read V2 --> SNOMED concepts, Read V2 -> Snomed terms, CTV3 -> SNOMED. You can
-#' find these files by navigating to 'https://isd.digital.nhs.uk/trud/',
-#' and searching for 'NHS Data Migration'. You will need a free TRUD account.
+#' @param readmaps Either (a) a single path to the unzipped NHS Data Migration
+#' folder (e.g. `'.../nhs_datamigration_29.0.0_20200401000001'`), in which case
+#' the three required mapping files are located automatically; or (b) a
+#' length-3 character vector / list of explicit paths in the order: Read V2 ->
+#' SNOMED concepts, Read V2 -> SNOMED terms, CTV3 -> SNOMED. The three files are:
+#' \itemize{
+#'   \item `Mapping Tables/Updated/Not Clinically Assured/rcsctmap_uk_20200401000001.txt`
+#'   \item `Mapping Tables/Updated/Not Clinically Assured/rctermsctmap_uk_20200401000001.txt`
+#'   \item `Mapping Tables/Updated/Clinically Assured/ctv3sctmap2_uk_20200401000001.txt`
+#' }
+#' Download the NHS Data Migration pack from
+#' <https://isd.digital.nhs.uk/trud/> (free TRUD account required). The pack
+#' was last released in April 2020 and is no longer updated, so the file names
+#' above are stable. Note that `rcsctmap_*` (Not Clinically Assured) is a
+#' different file from `rcsctmap2_*` (Clinically Assured) — `map_diag_codes`
+#' requires the former.
 #' @param snomed_folders A list of the path(s) to the (unzipped) folder(s)
 #' containing SNOMED CT files. You can find this folder by navigating to
 #' 'https://isd.digital.nhs.uk/trud/users/authenticated/group/0/home'. The folders
@@ -144,6 +156,7 @@ map_diag_codes <- function(readmaps,
   # Read V2 -> SNOMED concepts
   # Read V2 -> SNOMED terms
   # CTV3 -> SNOMED
+  readmaps <- resolve_readmaps(readmaps)
   readmaps <- do.call(Rdiagnosislist::loadREADMAPS, as.list(readmaps))
 
 
@@ -443,4 +456,39 @@ map_diag_codes <- function(readmaps,
 
   return(list(lookup = long, csv_files = csv_files))
 
+}
+
+
+
+# Resolve `readmaps` to a length-3 character vector of file paths in the order
+# expected by Rdiagnosislist::loadREADMAPS (read2_concept, read2_term, ctv3).
+# Accepts either a single path to the unzipped NHS Data Migration folder, or a
+# length-3 vector/list of explicit paths.
+resolve_readmaps <- function(readmaps) {
+
+  if (is.character(readmaps) && length(readmaps) == 1L && dir.exists(readmaps)) {
+    base <- file.path(readmaps, 'Mapping Tables', 'Updated')
+    paths <- c(
+      file.path(base, 'Not Clinically Assured',
+                'rcsctmap_uk_20200401000001.txt'),
+      file.path(base, 'Not Clinically Assured',
+                'rctermsctmap_uk_20200401000001.txt'),
+      file.path(base, 'Clinically Assured',
+                'ctv3sctmap2_uk_20200401000001.txt')
+    )
+  } else {
+    paths <- as.character(unlist(readmaps, use.names = FALSE))
+    if (length(paths) != 3L) {
+      stop('`readmaps` must be either a single path to the unzipped NHS Data ',
+           'Migration folder, or a length-3 vector/list of file paths.')
+    }
+  }
+
+  missing <- paths[!file.exists(paths)]
+  if (length(missing) > 0L) {
+    stop('The following `readmaps` file(s) could not be found:\n  ',
+         paste(missing, collapse = '\n  '))
+  }
+
+  paths
 }

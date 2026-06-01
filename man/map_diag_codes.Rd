@@ -17,10 +17,22 @@ map_diag_codes(
 )
 }
 \arguments{
-\item{readmaps}{A list of 3 paths for the following 3 files (in this order):
-Read V2 --> SNOMED concepts, Read V2 -> Snomed terms, CTV3 -> SNOMED. You can
-find these files by navigating to 'https://isd.digital.nhs.uk/trud/',
-and searching for 'NHS Data Migration'. You will need a free TRUD account.}
+\item{readmaps}{Either (a) a single path to the unzipped NHS Data Migration
+folder (e.g. \code{'.../nhs_datamigration_29.0.0_20200401000001'}), in which case
+the three required mapping files are located automatically; or (b) a
+length-3 character vector / list of explicit paths in the order: Read V2 ->
+SNOMED concepts, Read V2 -> SNOMED terms, CTV3 -> SNOMED. The three files are:
+\itemize{
+\item \verb{Mapping Tables/Updated/Not Clinically Assured/rcsctmap_uk_20200401000001.txt}
+\item \verb{Mapping Tables/Updated/Not Clinically Assured/rctermsctmap_uk_20200401000001.txt}
+\item \verb{Mapping Tables/Updated/Clinically Assured/ctv3sctmap2_uk_20200401000001.txt}
+}
+Download the NHS Data Migration pack from
+\url{https://isd.digital.nhs.uk/trud/} (free TRUD account required). The pack
+was last released in April 2020 and is no longer updated, so the file names
+above are stable. Note that \verb{rcsctmap_*} (Not Clinically Assured) is a
+different file from \verb{rcsctmap2_*} (Clinically Assured) — \code{map_diag_codes}
+requires the former.}
 
 \item{snomed_folders}{A list of the path(s) to the (unzipped) folder(s)
 containing SNOMED CT files. You can find this folder by navigating to
