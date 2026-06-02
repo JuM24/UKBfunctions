@@ -16,7 +16,7 @@
 #' systems using SNOMED CT as the hub. It loads the READ2/CTV3 -> SNOMED
 #' mapping tables and the SNOMED CT dictionary (or a previously saved `.Rds`),
 #' expands every current SNOMED concept, and maps it to READ2 and ICD-10
-#' (optionally also CTV3, CTV3-simple, and OPCS4). Optionally, a folder of
+#' (optionally also CTV3 and CTV3-simple). Optionally, a folder of
 #' per-disease `.xlsx` ICD-10 files can be joined to the lookup and written
 #' out as mapped `.csv` files.
 #'
@@ -45,8 +45,8 @@
 #' @param active_only Logical; passed to [Rdiagnosislist::loadSNOMED()]; whether
 #' to load only active SNOMED concepts. Ignored when `snomed_folders` is a path
 #' to an already-built SNOMED .Rds file.
-#' @param include_ctv_opcs4 Logical; whether ctv3, ctv3simple, and opcs4 should
-#' be returned in addition to read2 and icd10.
+#' @param include_ctv3 Logical; whether ctv3 and ctv3simple should be returned
+#' in addition to read2 and icd10.
 #' @param save_snomed Path and name of the SNOMED .Rds file to be saved to
 #' file. If `NULL` (default) or `FALSE`, nothing is exported.
 #' @param xlsx_in Optional path to a folder of per-disease `.xlsx` files (each
@@ -61,8 +61,7 @@
 #' @param lkps_maps Optional path to the UKB `all_lkps_maps_v4.xlsx` workbook
 #' (UKB resource 592). When supplied, ICD-10 and CTV3 descriptions are filled
 #' from its `icd10_lkp` and `read_ctv3_lkp` sheets. If `NULL` (default), those
-#' descriptions are left `NA` (OPCS4 has no description table in that file and
-#' is always `NA`).
+#' descriptions are left `NA`.
 #' @param icd9_include Logical; whether the `lkps_maps` file should be used to
 #' additionally map to ICD-9 and include it in the final output. When `TRUE`,
 #' the existing `icd10`, `read2`, `ctv3`, and `ctv3simple` rows in `$lookup`
@@ -77,8 +76,8 @@
 #' full concept expansion — read2/ctv3/etc. appear only where they co-occur on
 #' a supplied-ICD-10 row; an empty tibble when the mapping step is not run, as
 #' it is derived from those inputs), with columns `code`; `code_source` (one
-#' of 'snomed', 'read2', 'icd10', and — when `include_ctv_opcs4` — 'ctv3',
-#' 'ctv3simple', and 'opcs4'; plus 'icd9' when `icd9_include`); `description`;
+#' of 'snomed', 'read2', 'icd10', and — when `include_ctv3` — 'ctv3' and
+#' 'ctv3simple'; plus 'icd9' when `icd9_include`); `description`;
 #' and `variable` (the input file / disease whose supplied ICD-10 the row
 #' carried, so a code is repeated once per matching disease). And `csv_files`,
 #' a character vector of the written `.csv` paths (empty when the mapping
@@ -97,18 +96,13 @@
 #' Statistical Classification of Diseases and Related Health Problems, Tenth
 #' Revision (ICD-10). Vols 1-3. Geneva, World Health Organization, 1992-2016.
 #'
-#' The OPCS Classification of Interventions and Procedures, codes, terms and
-#' text is Crown copyright (2019) published by Health and Social Care
-#' Information Centre, also known as NHS Digital and licensed under the Open
-#' Government Licence.
-#'
 #' @export
 
 
 map_diag_codes <- function(readmaps,
                            snomed_folders,
                            active_only,
-                           include_ctv_opcs4 = TRUE,
+                           include_ctv3 = TRUE,
                            save_snomed = NULL,
                            xlsx_in = NULL,
                            csv_out = NULL,
@@ -128,6 +122,27 @@ map_diag_codes <- function(readmaps,
     stop('Both `xlsx_in` and `csv_out` must be supplied to run the mapping step.')
   }
 
+  # when the mapping stage runs, both must be folders (not files), and `xlsx_in`
+  # must actually contain .xlsx files — otherwise the stage silently produces
+  # nothing (`list.files()` on a file/empty dir returns character(0)).
+  if (run_mapping) {
+    if (!dir.exists(xlsx_in)) {
+      stop(if (file.exists(xlsx_in)) {
+        paste0('`xlsx_in` must be a folder, but points to a file:\n  ', xlsx_in)
+      } else {
+        paste0('`xlsx_in` folder could not be found:\n  ', xlsx_in)
+      })
+    }
+    if (length(list.files(xlsx_in, pattern = '\\.xlsx$',
+                          ignore.case = TRUE)) == 0L) {
+      stop('`xlsx_in` folder contains no .xlsx files:\n  ', xlsx_in)
+    }
+    # `csv_out` may be absent (it is created later); only error if it is a file.
+    if (!dir.exists(csv_out) && file.exists(csv_out)) {
+      stop('`csv_out` must be a folder, but points to a file:\n  ', csv_out)
+    }
+  }
+
   # icd9 mapping needs the lkps_maps workbook (icd9_icd10, read_v2_icd9,
   # read_ctv3_icd9, icd9_lkp sheets live there)
   if (isTRUE(icd9_include) && is.null(lkps_maps)) {
@@ -139,11 +154,42 @@ map_diag_codes <- function(readmaps,
     length(snomed_folders) == 1L &&
     grepl('\\.rds$', snomed_folders, ignore.case = TRUE)
 
+  # check the SNOMED input(s) exist: a missing .Rds or any missing SNOMED CT
+  # folder (UK and/or international) would otherwise load silently incomplete.
+  if (snomed_is_rds) {
+    if (!file.exists(snomed_folders)) {
+      stop('`snomed_folders` points to a SNOMED .Rds file that does not exist:',
+           '\n  ', snomed_folders)
+    }
+  } else {
+    snomed_paths <- as.character(unlist(snomed_folders, use.names = FALSE))
+    missing_dirs <- snomed_paths[!dir.exists(snomed_paths)]
+    if (length(missing_dirs) > 0L) {
+      stop('The following `snomed_folders` could not be found (or are files, ',
+           'not folders):\n  ', paste(missing_dirs, collapse = '\n  '))
+    }
+  }
+
   if (!requireNamespace('Rdiagnosislist', quietly = TRUE)) {
     stop(
       "Package 'Rdiagnosislist' is required but not installed.\n",
-      'It was archived from CRAN (2026-05-18). Install it with:\n',
-      '  remotes::install_github("anoopshah/Rdiagnosislist")'
+      'It was archived from CRAN (2026-05-18). Install the pinned version with:\n',
+      '  remotes::install_github("anoopshah/Rdiagnosislist@b729eb852d8f1cf3694562902777b4aab54cdab4")'
+    )
+  }
+
+  # Version guard: 1.4.x getMaps(to = 'icd10') maps via the International refset
+  # (447562003) and collapses to one code per concept, silently dropping the UK
+  # ICD-10 codes (refset 999002271000000101) that UKB/HES data is coded to. 1.5.1
+  # returns the UK + International union per concept. Without this check a 1.4.x
+  # user would get quietly under-mapped output rather than an error.
+  if (utils::packageVersion('Rdiagnosislist') < '1.5.1') {
+    stop(
+      "Rdiagnosislist >= 1.5.1 is required: 1.4.x maps ICD-10 via the ",
+      'International refset and silently drops UK ICD-10 codes. Installed: ',
+      as.character(utils::packageVersion('Rdiagnosislist')),
+      '. Reinstall the pinned version:\n',
+      '  remotes::install_github("anoopshah/Rdiagnosislist@b729eb852d8f1cf3694562902777b4aab54cdab4")'
     )
   }
 
@@ -176,15 +222,14 @@ map_diag_codes <- function(readmaps,
 
   # expand all current snomed concepts and map them to other coding systems
   # this creates a master lookup table
-  if(include_ctv_opcs4){
+  if(include_ctv3){
     snomed <- Rdiagnosislist::SNOMEDconcept('', SNOMED = snomed_dict, exact_match = FALSE) |>
-      Rdiagnosislist::getMaps(to = c('read2', 'icd10',
-                     'ctv3', 'ctv3simple', 'opcs4'
-      ), mappingtable = readmaps, SNOMED = snomed_dict)
+      Rdiagnosislist::getMaps(to = c('read2', 'icd10', 'ctv3', 'ctv3simple'),
+                              mappingtable = readmaps, SNOMED = snomed_dict)
   } else {
     snomed <- Rdiagnosislist::SNOMEDconcept('', SNOMED = snomed_dict, exact_match = FALSE) |>
-      Rdiagnosislist::getMaps(to = c('read2', 'icd10'
-      ), mappingtable = readmaps, SNOMED = snomed_dict)
+      Rdiagnosislist::getMaps(to = c('read2', 'icd10'),
+                              mappingtable = readmaps, SNOMED = snomed_dict)
   }
 
   # data.table int64 format doesn't work well in tibble, so cast conceptId
@@ -196,12 +241,11 @@ map_diag_codes <- function(readmaps,
     tidyr::unnest(c(read2_code, read2_term), keep_empty = TRUE)
 
   # final lookup only containing rows with either read2 or icd10
-  if (include_ctv_opcs4) {
+  if (include_ctv3) {
     snomed <- snomed |>
-      tidyr::unnest(opcs4_code, keep_empty = TRUE) |>
       tidyr::unnest(c(ctv3_concept, ctv3_termid), keep_empty = TRUE) |>
       tidyr::unnest(ctv3_simple, keep_empty = TRUE) |>
-      finalfit::rm_empty_block(read2_code, icd10_code, opcs4_code,
+      finalfit::rm_empty_block(read2_code, icd10_code,
                                ctv3_concept, ctv3_simple) # remove rows with no lookup
   } else {
     snomed <- finalfit::rm_empty_block(snomed, read2_code, icd10_code) # remove rows with no lookup
@@ -322,17 +366,13 @@ map_diag_codes <- function(readmaps,
                          code_source = 'icd10', description = NA_character_)
     )
 
-    if (include_ctv_opcs4) {
+    if (include_ctv3) {
       long <- dplyr::bind_rows(
         long,
         rows_supplied |>
           dplyr::distinct(variable, ctv3_concept) |>
           dplyr::transmute(variable, code = ctv3_concept,
                            code_source = 'ctv3', description = NA_character_),
-        rows_supplied |>
-          dplyr::distinct(variable, opcs4_code) |>
-          dplyr::transmute(variable, code = opcs4_code,
-                           code_source = 'opcs4', description = NA_character_),
         rows_supplied |>
           dplyr::distinct(variable, ctv3_simple) |>
           dplyr::transmute(variable, code = ctv3_simple,

@@ -37,9 +37,9 @@ Imports:
     tools
 Suggests:
     devtools,
-    Rdiagnosislist,
+    Rdiagnosislist (>= 1.5.1),
     testthat
 Remotes:
-    anoopshah/Rdiagnosislist
+    anoopshah/Rdiagnosislist@b729eb852d8f1cf3694562902777b4aab54cdab4
 Config/roxygen2/version: 8.0.0
 Config/testthat/edition: 3

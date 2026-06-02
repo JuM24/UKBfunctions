@@ -8,7 +8,7 @@ map_diag_codes(
   readmaps,
   snomed_folders,
   active_only,
-  include_ctv_opcs4 = TRUE,
+  include_ctv3 = TRUE,
   save_snomed = NULL,
   xlsx_in = NULL,
   csv_out = NULL,
@@ -45,8 +45,8 @@ a path to the SNOMED .Rds file if the latter has already been created.}
 to load only active SNOMED concepts. Ignored when \code{snomed_folders} is a path
 to an already-built SNOMED .Rds file.}
 
-\item{include_ctv_opcs4}{Logical; whether ctv3, ctv3simple, and opcs4 should
-be returned in addition to read2 and icd10.}
+\item{include_ctv3}{Logical; whether ctv3 and ctv3simple should be returned
+in addition to read2 and icd10.}
 
 \item{save_snomed}{Path and name of the SNOMED .Rds file to be saved to
 file. If \code{NULL} (default) or \code{FALSE}, nothing is exported.}
@@ -65,8 +65,7 @@ files. Created if it does not exist. See \code{xlsx_in}.}
 \item{lkps_maps}{Optional path to the UKB \code{all_lkps_maps_v4.xlsx} workbook
 (UKB resource 592). When supplied, ICD-10 and CTV3 descriptions are filled
 from its \code{icd10_lkp} and \code{read_ctv3_lkp} sheets. If \code{NULL} (default), those
-descriptions are left \code{NA} (OPCS4 has no description table in that file and
-is always \code{NA}).}
+descriptions are left \code{NA}.}
 
 \item{icd9_include}{Logical; whether the \code{lkps_maps} file should be used to
 additionally map to ICD-9 and include it in the final output. When \code{TRUE},
@@ -84,8 +83,8 @@ input codes} (the mapping rows behind the per-disease \code{.csv} files; not a
 full concept expansion — read2/ctv3/etc. appear only where they co-occur on
 a supplied-ICD-10 row; an empty tibble when the mapping step is not run, as
 it is derived from those inputs), with columns \code{code}; \code{code_source} (one
-of 'snomed', 'read2', 'icd10', and — when \code{include_ctv_opcs4} — 'ctv3',
-'ctv3simple', and 'opcs4'; plus 'icd9' when \code{icd9_include}); \code{description};
+of 'snomed', 'read2', 'icd10', and — when \code{include_ctv3} — 'ctv3' and
+'ctv3simple'; plus 'icd9' when \code{icd9_include}); \code{description};
 and \code{variable} (the input file / disease whose supplied ICD-10 the row
 carried, so a code is repeated once per matching disease). And \code{csv_files},
 a character vector of the written \code{.csv} paths (empty when the mapping
@@ -96,7 +95,7 @@ Builds a lookup that cross-references diagnostic codes between coding
 systems using SNOMED CT as the hub. It loads the READ2/CTV3 -> SNOMED
 mapping tables and the SNOMED CT dictionary (or a previously saved \code{.Rds}),
 expands every current SNOMED concept, and maps it to READ2 and ICD-10
-(optionally also CTV3, CTV3-simple, and OPCS4). Optionally, a folder of
+(optionally also CTV3 and CTV3-simple). Optionally, a folder of
 per-disease \code{.xlsx} ICD-10 files can be joined to the lookup and written
 out as mapped \code{.csv} files.
 }
@@ -112,9 +111,4 @@ registered trademarks of the IHTSDO.
 ICD-10 codes, terms and text used by permission of WHO, from: International
 Statistical Classification of Diseases and Related Health Problems, Tenth
 Revision (ICD-10). Vols 1-3. Geneva, World Health Organization, 1992-2016.
-
-The OPCS Classification of Interventions and Procedures, codes, terms and
-text is Crown copyright (2019) published by Health and Social Care
-Information Centre, also known as NHS Digital and licensed under the Open
-Government Licence.
 }
