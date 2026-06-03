@@ -168,6 +168,32 @@ map_diag_codes <- function(readmaps,
       stop('The following `snomed_folders` could not be found (or are files, ',
            'not folders):\n  ', paste(missing_dirs, collapse = '\n  '))
     }
+
+    # Windows MAX_PATH (260 chars) issue. SNOMED RF2 map files add ~90 chars
+    # to the folder path (e.g. /Snapshot/Refset/Map/der2_iisssciRefset_Extended
+    # MapUKCLSnapshot_...txt). If the absolute folder path is longer than 260,
+    # dir()/fread silently skip the longest files — this means that
+    # ICD-10 ExtendedMap (longest filename) drops first, leaving EXTENDEDMAP
+    # without `mapBlock` and triggering a cryptic getMaps error later. Warn (not
+    # stop) here: it is a heuristic and the post-load guard is the hard check.
+    if (.Platform$OS.type == 'windows') {
+      for (p in snomed_paths) {
+        abs_p <- normalizePath(p, winslash = '/', mustWork = FALSE)
+        if (nchar(abs_p) + 90L > 260L) {
+          warning(
+            'SNOMED folder path is long enough that some release files may ',
+            'exceed the Windows 260-character MAX_PATH limit and be silently ',
+            'skipped by loadSNOMED. The UK ICD-10 ExtendedMap (longest ',
+            'filename) drops first, which later causes a missing-`mapBlock` ',
+            'error in getMaps.\n  Folder: ', abs_p, '\n',
+            'Move the SNOMED folders to a shorter path (e.g. C:/snomed), use ',
+            '`subst` to map a drive letter to the folder, or enable Windows ',
+            'long-path support.',
+            call. = FALSE
+          )
+        }
+      }
+    }
   }
 
   if (!requireNamespace('Rdiagnosislist', quietly = TRUE)) {
@@ -218,6 +244,61 @@ map_diag_codes <- function(readmaps,
   # optionally cache the dictionary so it can be reused via `snomed_folders`.
   if (!is.null(save_snomed) && !isFALSE(save_snomed)) {
     saveRDS(snomed_dict, save_snomed)
+  }
+
+  # Check files have everything that's needed
+  # getMaps(to = 'icd10') keys the EXTENDEDMAP table on `mapBlock`
+  # and filters it on `mapCategoryId`, so both columns must be present or it
+  # fails with a cryptic data.table error
+  # ("some columns are not in the data.table: [mapBlock]"). Those columns come
+  # from different SNOMED files: `mapBlock` only from the UK ICD-10 map
+  # (der2_iisssciRefset_ExtendedMap*Snapshot*, refset 999002271000000101) and
+  # `mapCategoryId` from the International / UK iissscc ExtendedMap. loadSNOMED
+  # rbinds all ExtendedMap files (fill = TRUE), so an absent column means that
+  # source file was never loaded. UKB HES is UK-ICD-10-coded, so the UK map is
+  # the one we need — catch it here with an actionable message.
+  em <- snomed_dict$EXTENDEDMAP
+  needed_cols <- c('mapBlock', 'mapCategoryId')
+  missing_cols <- needed_cols[!needed_cols %in% names(em)]
+  has_uk_icd10 <- !is.null(em) &&
+    '999002271000000101' %in% as.character(em$refsetId)
+  if (is.null(em) || nrow(em) == 0L ||
+      length(missing_cols) > 0L || !has_uk_icd10) {
+    stop(
+      'The loaded SNOMED dictionary cannot be mapped to ICD-10 by ',
+      'Rdiagnosislist::getMaps().\n',
+      if (is.null(em) || nrow(em) == 0L) {
+        '  - the EXTENDEDMAP (ICD-10 map) table is empty or absent.\n'
+      } else '',
+      if (length(missing_cols) > 0L) {
+        paste0('  - EXTENDEDMAP is missing column(s): ',
+               paste(missing_cols, collapse = ', '), '.\n')
+      } else '',
+      if (!has_uk_icd10) {
+        paste0('  - the UK ICD-10 map refset (999002271000000101) is not ',
+               'present in EXTENDEDMAP.\n')
+      } else '',
+      '`mapBlock` and the UK refset come from the SNOMED CT UK Clinical ',
+      'Edition file\n  ',
+      'Snapshot/Refset/Map/der2_iisssciRefset_ExtendedMap*Snapshot*.txt;\n',
+      '`mapCategoryId` comes from the iissscc ExtendedMap (UK and/or ',
+      'International).\n',
+      'Pass the unzipped SNOMED CT UK Clinical Edition folder (and the ',
+      'International\nedition) in `snomed_folders`, and check that the UK ',
+      'ICD-10 map file above is\npresent and complete.',
+      if (.Platform$OS.type == 'windows' && !snomed_is_rds) {
+        paste0('\nOn Windows this is most often the 260-character MAX_PATH ',
+               'limit: the UK ICD-10\nExtendedMap has the longest filename, so ',
+               'a deep SNOMED folder path pushes it\npast 260 chars and ',
+               'loadSNOMED silently skips it. Move the SNOMED folders to a\n',
+               'shorter path (e.g. C:/snomed), `subst` a drive letter to the ',
+               'folder, or enable\nWindows long-path support.')
+      } else '',
+      if (snomed_is_rds) {
+        paste0('\nYou loaded a cached SNOMED .Rds; it may predate the UK ',
+               'ICD-10 map file —\nrebuild it from the SNOMED CT folders.')
+      } else ''
+    )
   }
 
   # expand all current snomed concepts and map them to other coding systems
