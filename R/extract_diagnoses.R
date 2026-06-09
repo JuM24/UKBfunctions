@@ -38,13 +38,14 @@
 #' indicates the coding system - ICD9, ICD10, etc. - for the diagnosis.
 #'
 #' For `source = 'gp'`, `df` must be in long format with a participant ID column,
-#' an `event_dt` date column, and the raw coding columns `read2`, `ctv3`, and
-#' optionally `snomed`. Only the coding columns present in `df` are reshaped, so a
-#' missing one is skipped without error.
+#' an `event_dt` date column, and the raw coding columns `read_2`, `read_3`, and
+#' optionally `snomed` (matching the native UK Biobank `gp_clinical` column names).
+#' Only the coding columns present in `df` are reshaped, so a missing one is
+#' skipped without error.
 #'
 #' The allowed coding systems in the `code_table` depend on `source`: for
-#' `source = 'inpatient'`, "icd9" and "icd10"; for `source = 'gp'`, "read2",
-#' "ctv3", and "snomed". The code table need not contain all coding systems; any
+#' `source = 'inpatient'`, "icd9" and "icd10"; for `source = 'gp'`, "read_2",
+#' "read_3", and "snomed". The code table need not contain all coding systems; any
 #' subset is accepted and missing codings are skipped without error.
 #' @return A data frame in long format with columns for participant ID,
 #' diagnostic code, date, and coding system. When `return_code_table = TRUE`,
@@ -175,11 +176,11 @@ extract_diagnoses <- function(df,
       colnames(code_table)[1:2] <- c('code', 'source')
 
       # reshape to long format: pivot the raw coding columns into code + coding
-      # columns. Only the columns present in `df` are reshaped, so a missing coding
-      # (e.g. no snomed) does not error. `gp_col_map` maps raw UKB GP column name to
-      # the coding label used in `code_table`.
-      gp_col_map <- c(read2 = 'read2', ctv3 = 'ctv3', snomed = 'snomed')
-      gp_cols    <- intersect(names(gp_col_map), colnames(df))
+      # columns. The coding columns use the native UKB `gp_clinical` names, so each
+      # column name doubles as its coding label. Only the columns present in `df`
+      # are reshaped, so a missing coding (e.g. no snomed) does not error.
+      gp_codings <- c('read_2', 'read_3', 'snomed')
+      gp_cols    <- intersect(gp_codings, colnames(df))
 
       df <- df |>
         dplyr::select(tidyselect::all_of(colname_id), event_dt,
@@ -188,14 +189,13 @@ extract_diagnoses <- function(df,
                             names_to  = 'coding',
                             values_to = 'code',
                             values_drop_na = TRUE) |>
-        dplyr::mutate(coding = unname(gp_col_map[coding])) |>
         dplyr::rename(date = event_dt) |>
         dplyr::mutate(date = as.character(date)) # to allow NA_character inclusion below
 
       # retain only the relevant codes
       df <- dplyr::filter(df,
-                          (coding == 'read2'  & code %in% code_table$code[code_table$source == 'read2']) |
-                            (coding == 'ctv3'   & code %in% code_table$code[code_table$source == 'ctv3']) |
+                          (coding == 'read_2' & code %in% code_table$code[code_table$source == 'read_2']) |
+                            (coding == 'read_3' & code %in% code_table$code[code_table$source == 'read_3']) |
                             (coding == 'snomed' & code %in% code_table$code[code_table$source == 'snomed'])) |>
         dplyr::mutate(date = dplyr::if_else(date %in% invalid_dates, NA_character_, date))
       df$date <- as.Date(df$date, format = date_form)
@@ -212,7 +212,7 @@ extract_diagnoses <- function(df,
         df$description <- NA_character_
         df$diagnosis   <- NA_character_
       }
-      for (d in intersect(c('read2', 'ctv3', 'snomed'), code_table$source)) {
+      for (d in intersect(c('read_2', 'read_3', 'snomed'), code_table$source)) {
         for (code_val in code_table$code[code_table$source == d]) {
           rows   <- df$coding == d & df$code == code_val
           ct_row <- code_table$source == d & code_table$code == code_val

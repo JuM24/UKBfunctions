@@ -76,12 +76,13 @@ character, date of diagnosis as character, and coding as character. The coding
 indicates the coding system - ICD9, ICD10, etc. - for the diagnosis.
 
 For \code{source = 'gp'}, \code{df} must be in long format with a participant ID column,
-an \code{event_dt} date column, and the raw coding columns \code{read2}, \code{ctv3}, and
-optionally \code{snomed}. Only the coding columns present in \code{df} are reshaped, so a
-missing one is skipped without error.
+an \code{event_dt} date column, and the raw coding columns \code{read_2}, \code{read_3}, and
+optionally \code{snomed} (matching the native UK Biobank \code{gp_clinical} column names).
+Only the coding columns present in \code{df} are reshaped, so a missing one is
+skipped without error.
 
 The allowed coding systems in the \code{code_table} depend on \code{source}: for
-\code{source = 'inpatient'}, "icd9" and "icd10"; for \code{source = 'gp'}, "read2",
-"ctv3", and "snomed". The code table need not contain all coding systems; any
+\code{source = 'inpatient'}, "icd9" and "icd10"; for \code{source = 'gp'}, "read_2",
+"read_3", and "snomed". The code table need not contain all coding systems; any
 subset is accepted and missing codings are skipped without error.
 }
