@@ -37,9 +37,15 @@
 #' character, date of diagnosis as character, and coding as character. The coding
 #' indicates the coding system - ICD9, ICD10, etc. - for the diagnosis.
 #'
-#' The allowed inputs for coding systems in the `code_table` data frame are
-#' "icd9", "icd10", "read2", "read3", "snomed". The code table need not
-#' contain all coding systems; any subset is accepted.
+#' For `source = 'gp'`, `df` must be in long format with a participant ID column,
+#' an `event_dt` date column, and the raw coding columns `read2`, `ctv3`, and
+#' optionally `snomed`. Only the coding columns present in `df` are reshaped, so a
+#' missing one is skipped without error.
+#'
+#' The allowed coding systems in the `code_table` depend on `source`: for
+#' `source = 'inpatient'`, "icd9" and "icd10"; for `source = 'gp'`, "read2",
+#' "ctv3", and "snomed". The code table need not contain all coding systems; any
+#' subset is accepted and missing codings are skipped without error.
 #' @return A data frame in long format with columns for participant ID,
 #' diagnostic code, date, and coding system. When `return_code_table = TRUE`,
 #' a list with elements `diagnoses` (the data frame) and `code_table` (the
@@ -75,50 +81,54 @@ extract_diagnoses <- function(df,
                                   ~ dplyr::na_if(.x, '')))
 
 
-    # separate sources of df (ICD9 vs 10) and dates vs. diagnosis codes
-    icd9 <- df |> dplyr::select(all_of(colname_id),
-                                  dplyr::starts_with('X41271.'))
-    icd9_date <- df |> dplyr::select(all_of(colname_id),
-                                       dplyr::starts_with('X41281.'))
-    icd10 <- df |> dplyr::select(all_of(colname_id),
-                                   dplyr::starts_with('X41270.'))
-    icd10_date <- df |> dplyr::select(all_of(colname_id),
-                                        dplyr::starts_with('X41280.'))
+    # build only the coding blocks whose UKB field columns are present, so a
+    # completely-absent ICD9 or ICD10 block does not break the reshape. The code
+    # and date fields of each coding are assumed to ship together (as UKB HES does),
+    # so presence is keyed on the code field.
+    blocks <- list()
 
-    # transform to long-type format
-    icd9_long <- icd9 |>  tidyr::pivot_longer(-tidyselect::all_of(colname_id),
-                                              names_to = 'column',
-                                              values_drop_na=TRUE) |>
-      dplyr::rename(code = value)
-    icd9_long$column <- sub('^X41271\\.', '', icd9_long$column)
+    if (any(startsWith(colnames(df), 'X41271.'))) {
+      # separate diagnosis codes and dates, then transform to long-type format
+      icd9_long <- df |>
+        dplyr::select(all_of(colname_id), dplyr::starts_with('X41271.')) |>
+        tidyr::pivot_longer(-tidyselect::all_of(colname_id),
+                            names_to = 'column', values_drop_na = TRUE) |>
+        dplyr::rename(code = value)
+      icd9_long$column <- sub('^X41271\\.', '', icd9_long$column)
 
-    icd9_date_long <- icd9_date |>  tidyr::pivot_longer(-tidyselect::all_of(colname_id),
-                                                        names_to = 'column',
-                                                        values_drop_na=TRUE) |>
-      dplyr::rename(date = value)
-    icd9_date_long$column <- sub('^X41281\\.', '', icd9_date_long$column)
+      icd9_date_long <- df |>
+        dplyr::select(all_of(colname_id), dplyr::starts_with('X41281.')) |>
+        tidyr::pivot_longer(-tidyselect::all_of(colname_id),
+                            names_to = 'column', values_drop_na = TRUE) |>
+        dplyr::rename(date = value)
+      icd9_date_long$column <- sub('^X41281\\.', '', icd9_date_long$column)
 
-    icd10_long <- icd10 |>  tidyr::pivot_longer(-tidyselect::all_of(colname_id),
-                                                names_to = 'column',
-                                                values_drop_na=TRUE) |>
-      dplyr::rename(code = value)
-    icd10_long$column <- sub('^X41270\\.', '', icd10_long$column)
+      icd9 <- merge(icd9_long, icd9_date_long, by = c(colname_id, 'column'))
+      icd9$column <- NULL; icd9$coding <- 'icd9'
+      blocks$icd9 <- icd9
+    }
 
-    icd10_date_long <- icd10_date |>  tidyr::pivot_longer(-tidyselect::all_of(colname_id),
-                                                          names_to = 'column',
-                                                          values_drop_na=TRUE) |>
-      dplyr::rename(date = value)
-    icd10_date_long$column <- sub('^X41280\\.', '', icd10_date_long$column)
+    if (any(startsWith(colnames(df), 'X41270.'))) {
+      icd10_long <- df |>
+        dplyr::select(all_of(colname_id), dplyr::starts_with('X41270.')) |>
+        tidyr::pivot_longer(-tidyselect::all_of(colname_id),
+                            names_to = 'column', values_drop_na = TRUE) |>
+        dplyr::rename(code = value)
+      icd10_long$column <- sub('^X41270\\.', '', icd10_long$column)
 
-    # combine all df
-    icd9 <- merge(icd9_long, icd9_date_long,
-                  by = c(colname_id, 'column'))
-    icd9$column <- NULL; icd9$coding <- 'icd9'
-    icd10 <- merge(icd10_long, icd10_date_long,
-                   by = c(colname_id, 'column'))
-    icd10$column <- NULL; icd10$coding <- 'icd10'
+      icd10_date_long <- df |>
+        dplyr::select(all_of(colname_id), dplyr::starts_with('X41280.')) |>
+        tidyr::pivot_longer(-tidyselect::all_of(colname_id),
+                            names_to = 'column', values_drop_na = TRUE) |>
+        dplyr::rename(date = value)
+      icd10_date_long$column <- sub('^X41280\\.', '', icd10_date_long$column)
 
-    df <- rbind(icd9, icd10) |>
+      icd10 <- merge(icd10_long, icd10_date_long, by = c(colname_id, 'column'))
+      icd10$column <- NULL; icd10$coding <- 'icd10'
+      blocks$icd10 <- icd10
+    }
+
+    df <- dplyr::bind_rows(blocks) |>
       dplyr::select(eid, date, coding, code)
   }
   if (source == 'gp' && wide == 1) stop("`wide = 1` is not valid when `source = 'gp'`; GP diagnoses are always in long format.")
@@ -143,7 +153,7 @@ extract_diagnoses <- function(df,
       }
 
       # count instances per code; optionally match codes with descriptions
-      code_table$n <- 0L
+      code_table$n <- rep(0L, nrow(code_table))
       if (all(c('description', 'variable') %in% colnames(code_table))) {
         df$description <- NA_character_
         df$diagnosis   <- NA_character_
@@ -164,24 +174,28 @@ extract_diagnoses <- function(df,
       if (is.character(code_table)) code_table <- read.csv(code_table)
       colnames(code_table)[1:2] <- c('code', 'source')
 
-      # reshape to long format: pivot read_2 / read_3 into code + coding columns
-      # TODO: when SNOMED data becomes available in UKB GP releases, add the
-      #       snomed column to the select() and pivot_longer() below.
+      # reshape to long format: pivot the raw coding columns into code + coding
+      # columns. Only the columns present in `df` are reshaped, so a missing coding
+      # (e.g. no snomed) does not error. `gp_col_map` maps raw UKB GP column name to
+      # the coding label used in `code_table`.
+      gp_col_map <- c(read2 = 'read2', ctv3 = 'ctv3', snomed = 'snomed')
+      gp_cols    <- intersect(names(gp_col_map), colnames(df))
+
       df <- df |>
-        dplyr::select(tidyselect::all_of(colname_id), event_dt, read_2, read_3) |>
-        tidyr::pivot_longer(c(read_2, read_3),
+        dplyr::select(tidyselect::all_of(colname_id), event_dt,
+                      tidyselect::all_of(gp_cols)) |>
+        tidyr::pivot_longer(tidyselect::all_of(gp_cols),
                             names_to  = 'coding',
                             values_to = 'code',
                             values_drop_na = TRUE) |>
-        # TODO: when SNOMED column is added above, add snomed = 'snomed' to recode().
-        dplyr::mutate(coding = dplyr::recode(coding, read_2 = 'read2', read_3 = 'read3')) |>
+        dplyr::mutate(coding = unname(gp_col_map[coding])) |>
         dplyr::rename(date = event_dt) |>
         dplyr::mutate(date = as.character(date)) # to allow NA_character inclusion below
 
       # retain only the relevant codes
       df <- dplyr::filter(df,
                           (coding == 'read2'  & code %in% code_table$code[code_table$source == 'read2']) |
-                            (coding == 'read3'  & code %in% code_table$code[code_table$source == 'read3']) |
+                            (coding == 'ctv3'   & code %in% code_table$code[code_table$source == 'ctv3']) |
                             (coding == 'snomed' & code %in% code_table$code[code_table$source == 'snomed'])) |>
         dplyr::mutate(date = dplyr::if_else(date %in% invalid_dates, NA_character_, date))
       df$date <- as.Date(df$date, format = date_form)
@@ -193,12 +207,12 @@ extract_diagnoses <- function(df,
       }
 
       # count instances per code; optionally match codes with descriptions
-      code_table$n <- 0L
+      code_table$n <- rep(0L, nrow(code_table))
       if (all(c('description', 'variable') %in% colnames(code_table))) {
         df$description <- NA_character_
         df$diagnosis   <- NA_character_
       }
-      for (d in intersect(c('read2', 'read3', 'snomed'), code_table$source)) {
+      for (d in intersect(c('read2', 'ctv3', 'snomed'), code_table$source)) {
         for (code_val in code_table$code[code_table$source == d]) {
           rows   <- df$coding == d & df$code == code_val
           ct_row <- code_table$source == d & code_table$code == code_val
