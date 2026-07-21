@@ -21,7 +21,9 @@ matchit_comparison(
   cardinality_time = 1200,
   cardinality_tols = 0.05,
   cem_cutpoints = "sturges",
-  smd_thresh
+  smd_thresh,
+  keep_models = TRUE,
+  compute_interactions = TRUE
 )
 }
 \arguments{
@@ -69,13 +71,29 @@ string algorithm name (e.g. \code{"sturges"}, \code{"fd"}, \code{"scott"}) or a 
 of numeric breakpoints per variable. Passed as \code{cutpoints} to \code{matchit}.}
 
 \item{smd_thresh}{The threshold for the max. SMD that implies balance.}
+
+\item{keep_models}{Logical; whether to retain the fitted matching objects in
+the \code{m} column of \code{results}. Defaults to \code{TRUE}. Set to \code{FALSE} for a
+low-memory screening pass: each fitted object is dropped as soon as its
+balance metrics have been extracted, so \code{results$m} is empty but
+\code{metrics_base} / \code{metrics_int} are still produced. The fitted objects are
+required for distributional / love plots, so keep this \code{TRUE} for the final
+run on the chosen methods.}
+
+\item{compute_interactions}{Logical; whether to compute the interaction and
+2nd-order balance table (\code{metrics_int}). Defaults to \code{TRUE}. This is the most
+memory-intensive step; set to \code{FALSE} only if \code{metrics_int} is not needed.}
 }
 \value{
-A list with three elements: \code{results} (a data frame containing
+A list with four elements: \code{results} (a data frame containing
 matchit objects and balance diagnostics for each method/distance
 combination), \code{metrics_base} (a summary table of base-variable balance
-metrics), and \code{metrics_int} (a summary table of interaction and
-second-order balance metrics).
+metrics), \code{metrics_int} (a summary table of interaction and
+second-order balance metrics), and \code{failures} (a table of any specs whose
+fit errored, with the captured error message). A spec whose fit fails is not
+dropped: it is kept as an empty dummy row in \code{results} (\code{m = NULL}, \code{NA}
+runtime, \code{NA} metrics) so that \code{spec_id} stays tied to the intended
+method/distance, and it is additionally listed in \code{failures}.
 }
 \description{
 \code{matchit_comparison} returns a list, that contains three lists, all with
@@ -84,4 +102,15 @@ and contains matchit objects to enable further exploration and plotting.
 'metrics_base' and 'metrics_int' are simplified tables with some select metrics
 for the variables in the model and their interactions and 2-order exponentials,
 respectively.
+}
+\details{
+Intended two-stage workflow for large data. The interaction/2nd-order balance
+step (\code{cobalt::bal.tab(int = TRUE, poly = 2)}) and the retained fitted objects
+are the two big memory costs. A screening pass can therefore run \emph{all}
+candidate methods with \code{keep_models = FALSE}, rank them on the returned
+\code{metrics_base} / \code{metrics_int} tables, and then a final pass re-runs only the
+best subset with \code{keep_models = TRUE} to obtain the fitted objects needed for
+love / distributional plots (\code{cobalt::bal.plot}). For imputed (\code{mids}) input
+balance is computed one imputation at a time, so the transient peak no longer
+scales with the number of imputations.
 }
