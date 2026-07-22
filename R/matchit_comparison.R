@@ -13,6 +13,20 @@
 #' `x$object` is the source `mids`. Each imputation's balance is scored on its
 #' own completed dataset, so only one imputation's design matrix is alive at a
 #' time.
+#'
+#' Per-imputation `Balance` tables are aligned **by rowname** (not by position)
+#' before averaging: `cobalt` can drop a collinear/constant interaction or
+#' polynomial term in one imputation but not another, so the tables can differ in
+#' both row count and row order. Rows are unioned across imputations (filling
+#' `NA` where a term is absent) and averaged with `na.rm = TRUE`.
+#'
+#' Known limitation (accepted): for a near-degenerate propensity score — notably
+#' `distance = 'rpart'`, whose PS takes only a couple of distinct values — this
+#' single-matchit path types the `distance` row as *continuous* and reports a
+#' variance ratio, whereas native `cobalt::bal.tab(mimids, ...)` types it as a
+#' 2-level *categorical* distance (NA variance ratio). This affects only that one
+#' `distance` row for such learners; the VR of a degenerate PS is not meaningful,
+#' so the difference is documented and accepted rather than special-cased.
 #' @noRd
 bal_tab_mi_lowmem <- function(x, int, poly, stats = c('m', 'v'),
                               binary = 'std', un = TRUE) {
@@ -26,8 +40,10 @@ bal_tab_mi_lowmem <- function(x, int, poly, stats = c('m', 'v'),
   mids_obj <- x[['object']]
   m <- length(fits)
 
-  diff_un <- diff_adj <- vr_adj <- NULL
-  var_names <- NULL
+  # per-imputation named vectors (names = balance-table rownames = terms), kept
+  # so they can be aligned BY NAME below rather than by position
+  diff_un_l <- diff_adj_l <- vr_adj_l <- vector('list', m)
+  var_names <- character(0)
   unm_ctrl <- numeric(m)
   unm_trt  <- numeric(m)
 
@@ -42,17 +58,16 @@ bal_tab_mi_lowmem <- function(x, int, poly, stats = c('m', 'v'),
     B <- bt[['Balance']]
     O <- bt[['Observations']]
 
-    # allocate on first pass now that we know the row set
-    if (is.null(var_names)) {
-      var_names <- rownames(B)
-      diff_un  <- matrix(NA_real_, nrow = nrow(B), ncol = m)
-      diff_adj <- matrix(NA_real_, nrow = nrow(B), ncol = m)
-      vr_adj   <- matrix(NA_real_, nrow = nrow(B), ncol = m)
-    }
+    # keep statistics keyed by term name; cobalt may drop a collinear/constant
+    # interaction or poly term in some imputations, so row sets can differ in
+    # count AND order across imputations -> never index by position
+    rn <- rownames(B)
+    diff_un_l[[i]]  <- stats::setNames(B[['Diff.Un']],      rn)
+    diff_adj_l[[i]] <- stats::setNames(B[['Diff.Adj']],     rn)
+    vr_adj_l[[i]]   <- stats::setNames(B[['V.Ratio.Adj']],  rn)
 
-    diff_un[, i]  <- B[['Diff.Un']]
-    diff_adj[, i] <- B[['Diff.Adj']]
-    vr_adj[, i]   <- B[['V.Ratio.Adj']]
+    # union of term names across imputations, preserving first-seen order
+    var_names <- union(var_names, rn)
 
     # single-matchit Observations uses cols 'Control'/'Treated'
     unm_ctrl[i] <- O['Unmatched', 'Control']
@@ -61,17 +76,31 @@ bal_tab_mi_lowmem <- function(x, int, poly, stats = c('m', 'v'),
     rm(dat_i, bt, B, O)
   }
 
+  # assemble [union_rows x m] matrices, aligning each imputation's values to the
+  # union of term names by NAME (NA where a term is absent in that imputation)
+  align <- function(lst) {
+    mat <- vapply(lst, function(v) unname(v[var_names]),
+                  numeric(length(var_names)))
+    dim(mat) <- c(length(var_names), m)
+    mat
+  }
+  diff_un  <- align(diff_un_l)
+  diff_adj <- align(diff_adj_l)
+  vr_adj   <- align(vr_adj_l)
+
   # average the per-imputation statistics (= cobalt's across-imputation mean).
   # Mean differences are averaged arithmetically, but variance ratios are
   # averaged on the LOG scale (geometric mean) to match cobalt, which treats
   # V-ratios multiplicatively (its balance deviation is |log(V.Ratio)|).
-  # na.rm = FALSE: binary vars have NA variance ratios in *every* imputation, so
-  # a plain mean yields NA there (matching native), and continuous vars are
-  # never NA, so nothing is silently dropped.
+  # na.rm = TRUE: a term dropped in some imputations is averaged over the ones
+  # where it is present; a binary var (NA variance ratio in EVERY imputation)
+  # yields NaN, coerced back to NA below so the structure matches native.
+  mean_vr <- exp(rowMeans(log(vr_adj), na.rm = TRUE))
+  mean_vr[is.nan(mean_vr)] <- NA_real_
   Balance.Across.Imputations <- data.frame(
-    Mean.Diff.Un     = rowMeans(diff_un),
-    Mean.Diff.Adj    = rowMeans(diff_adj),
-    Mean.V.Ratio.Adj = exp(rowMeans(log(vr_adj))),
+    Mean.Diff.Un     = rowMeans(diff_un,  na.rm = TRUE),
+    Mean.Diff.Adj    = rowMeans(diff_adj, na.rm = TRUE),
+    Mean.V.Ratio.Adj = mean_vr,
     row.names        = var_names,
     check.names      = FALSE
   )
