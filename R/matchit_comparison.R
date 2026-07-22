@@ -92,14 +92,19 @@ bal_tab_mi_lowmem <- function(x, int, poly, stats = c('m', 'v'),
   # Mean differences are averaged arithmetically, but variance ratios are
   # averaged on the LOG scale (geometric mean) to match cobalt, which treats
   # V-ratios multiplicatively (its balance deviation is |log(V.Ratio)|).
-  # na.rm = TRUE: a term dropped in some imputations is averaged over the ones
-  # where it is present; a binary var (NA variance ratio in EVERY imputation)
-  # yields NaN, coerced back to NA below so the structure matches native.
-  mean_vr <- exp(rowMeans(log(vr_adj), na.rm = TRUE))
-  mean_vr[is.nan(mean_vr)] <- NA_real_
+  # Divide by m (NOT by the count of imputations where the term is defined): a
+  # term that cobalt drops in an imputation is constant there, i.e. perfectly
+  # balanced, so it contributes 0 to the difference sum and log(1)=0 to the
+  # V-ratio sum. This matches native cobalt, which averages a partially-present
+  # term over all m imputations (dividing by count would inflate it by m/present,
+  # e.g. a 1-of-2 term would come out 2x native). A binary var has NA V-ratio in
+  # EVERY imputation (present == 0) -> reset to NA to match native's `.`.
+  present <- rowSums(!is.na(vr_adj))
+  mean_vr <- exp(rowSums(log(vr_adj), na.rm = TRUE) / m)
+  mean_vr[present == 0] <- NA_real_
   Balance.Across.Imputations <- data.frame(
-    Mean.Diff.Un     = rowMeans(diff_un,  na.rm = TRUE),
-    Mean.Diff.Adj    = rowMeans(diff_adj, na.rm = TRUE),
+    Mean.Diff.Un     = rowSums(diff_un,  na.rm = TRUE) / m,
+    Mean.Diff.Adj    = rowSums(diff_adj, na.rm = TRUE) / m,
     Mean.V.Ratio.Adj = mean_vr,
     row.names        = var_names,
     check.names      = FALSE
